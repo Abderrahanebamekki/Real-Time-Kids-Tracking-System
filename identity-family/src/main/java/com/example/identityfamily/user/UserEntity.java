@@ -1,15 +1,13 @@
 package com.example.identityfamily.user;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -28,10 +26,15 @@ public class UserEntity implements UserDetails {
     private String username;
     private String password;
     private Role role;
+    private LocalDateTime createdAt;
 
+    @PrePersist
+    private void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return List.of(new SimpleGrantedAuthority("ROLE_"+role.toString()));
     }
 
     @Override
