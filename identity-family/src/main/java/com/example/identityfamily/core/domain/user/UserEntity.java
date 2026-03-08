@@ -1,4 +1,4 @@
-package com.example.identityfamily.user;
+package com.example.identityfamily.core.domain.user;
 
 
 import jakarta.persistence.*;
