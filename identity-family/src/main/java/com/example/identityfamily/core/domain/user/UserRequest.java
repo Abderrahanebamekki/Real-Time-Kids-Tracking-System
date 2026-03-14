@@ -1,5 +1,6 @@
 package com.example.identityfamily.core.domain.user;
 
+import jakarta.persistence.PrePersist;
 import lombok.*;
 
 @Builder
@@ -12,8 +13,9 @@ public class UserRequest {
     private String password;
     private Role role;
 
-    public UserRequest(){
+
+    @PrePersist
+    public void setRole(Role role) {
         this.role = Role.USER;
     }
-
 }

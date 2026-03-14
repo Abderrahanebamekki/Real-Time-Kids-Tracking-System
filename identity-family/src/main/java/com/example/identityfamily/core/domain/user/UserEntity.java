@@ -1,7 +1,10 @@
 package com.example.identityfamily.core.domain.user;
 
 
+import com.example.identityfamily.core.domain.parent.ParentEntity;
+import com.example.identityfamily.core.domain.verficationcode.VerificationCodeEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,10 +26,17 @@ public class UserEntity implements UserDetails {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Column(unique = true , nullable = false)
     private String username;
+
+    @Column(nullable = false)
     private String password;
     private Role role;
     private LocalDateTime createdAt;
+
+    @OneToMany(fetch = FetchType.LAZY , cascade = CascadeType.ALL)
+    private List<VerificationCodeEntity>  verificationCodes;
+
 
     @PrePersist
     private void onCreate() {

@@ -1,4 +1,4 @@
-package com.example.identityfamily.application.security;
+package com.example.identityfamily.core.domain.globalservice;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -8,13 +8,14 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
 import java.util.Map;
 
 
-@Component
+@Service
 public class JwtService {
 
     @Value("${security.jwt.secret-key}")
@@ -24,7 +25,7 @@ public class JwtService {
     private long jwtExpiration ;
 
     public String buildJwt(
-            Map<String,Object> claims,
+            Map<String,Object> claims ,
             UserDetails userDetails
     ){
          return Jwts
@@ -36,6 +37,8 @@ public class JwtService {
                  .signWith(getSingInkey(),SignatureAlgorithm.HS256)
                  .compact();
     }
+
+
 
     private Key getSingInkey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
