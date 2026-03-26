@@ -1,6 +1,4 @@
-package com.example.identityfamily.core.domain.globalservice;
-
-import org.springframework.stereotype.Component;
+package com.example.gateway.core.domain.globalservice;
 
 public class VerificationCodeGenerator {
 

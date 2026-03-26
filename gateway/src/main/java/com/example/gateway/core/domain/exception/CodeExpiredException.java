@@ -1,4 +1,4 @@
-package com.example.identityfamily.core.domain.exception;
+package com.example.gateway.core.domain.exception;
 
 public class CodeExpiredException extends RuntimeException {
     public CodeExpiredException() {

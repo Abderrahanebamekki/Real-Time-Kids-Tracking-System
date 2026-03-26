@@ -1,0 +1,51 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: gateway
+
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/auth
+    username: postgres
+    password: 12345678
+    pool:
+      enabled: true
+      max-size: 10
+      initial-size: 5
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: identity-family
+              uri: lb://IDENTITY-FAMILY
+              predicates:
+                - Path=/identity/**
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: bamekki.abderrahmane49@gmail.com
+    password: "wyyp bztz bpse rzzw"  # ✅ Quoted because of spaces
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
+logging:
+  level:
+    org.springframework.r2dbc: DEBUG
+    io.r2dbc.postgresql: DEBUG
+    org.postgresql: DEBUG

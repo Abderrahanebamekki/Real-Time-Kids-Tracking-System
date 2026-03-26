@@ -1,32 +1,44 @@
-package com.example.identityfamily.core.domain.globalservice;
+package com.example.gateway.core.domain.globalservice;
 
-
+import com.example.gateway.core.domain.exception.EmailSendingException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.mail.SimpleMailMessage;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    public void sendVerificationEmail(String to, String code) throws MessagingException {
-
-        String subject = "Email Verification Code";
-        String html = buildVerificationTemplate(code);
-
-        sendHtmlEmail(to, subject, html);
+    public Mono<Void> sendVerificationEmail(String to, String code) {
+        return Mono.fromRunnable(() -> {
+                    try {
+                        String subject = "Email Verification Code";
+                        String html = buildVerificationTemplate(code);
+                        sendHtmlEmail(to, subject, html);
+                    } catch (MessagingException e) {
+                        // Wrap checked exception in RuntimeException to propagate through reactive stream
+                        throw new EmailSendingException("Failed to send email to " + to, e);
+                    }
+                })
+                .subscribeOn(Schedulers.boundedElastic())
+                .then()
+                .onErrorMap(EmailSendingException.class, ex -> {
+                    log.error("Email sending failed for user: {}", to, ex);
+                    return ex;
+                });
     }
 
     private void sendHtmlEmail(String to, String subject, String htmlBody) throws MessagingException {
-
         MimeMessage message = mailSender.createMimeMessage();
-
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
         helper.setTo(to);
@@ -37,7 +49,6 @@ public class EmailService {
     }
 
     private String buildVerificationTemplate(String code) {
-
         return """
                 <html>
                     <body style="font-family: Arial; background-color:#f4f4f4; padding:20px;">
@@ -62,4 +73,5 @@ public class EmailService {
                 </html>
                 """.formatted(code);
     }
+
 }
