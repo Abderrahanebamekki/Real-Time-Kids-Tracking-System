@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: device-gateway
+jwt:
+  secret: k9Fv3xP8qZr7Lm2QwXc4B8N5tYh6JpR0uD1sE9aK7M3VxT2ZpLq8Wc5N4Yh1R6F
+  expiration: 86400000

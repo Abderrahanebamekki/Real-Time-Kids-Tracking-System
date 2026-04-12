@@ -23,11 +23,6 @@ public class JwtService {
     @Value("${security.jwt.expiration-time}")
     private long jwtExpiration;
 
-    // ==================== PUBLIC API ====================
-
-    /**
-     * Generate JWT token with extra claims
-     */
     public String buildJwt(Map<String, Object> extraClaims, UserDetails userDetails) {
         return Jwts.builder()
                 .claims(extraClaims)                                    // ✅ Changed from setClaims()

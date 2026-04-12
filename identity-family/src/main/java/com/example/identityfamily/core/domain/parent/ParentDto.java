@@ -22,6 +22,8 @@ public class ParentDto {
     @NotBlank(message = "phoneNumber is required")
     @Size(max = 12)
     private String phoneNumber;
+    private long user_id;
+
 
     @PrePersist
     private String formatPhoneNumber(String phoneNumber) {
