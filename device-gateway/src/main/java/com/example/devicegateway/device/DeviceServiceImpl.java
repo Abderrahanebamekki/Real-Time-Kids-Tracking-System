@@ -7,11 +7,11 @@ import reactor.core.publisher.Mono;
 public class DeviceServiceImpl implements DeviceService {
     @Override
     public Mono<Void> linkDeviceToChild(Long childId, Long userId, String deviceId) {
-
+        return Mono.empty();
     }
 
     @Override
     public Mono<Void> registerDevice() {
-
+        return Mono.empty();
     }
 }
