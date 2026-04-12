@@ -6,7 +6,7 @@ import reactor.core.publisher.Mono;
 @Service
 public class DeviceServiceImpl implements DeviceService {
     @Override
-    public Mono<Void> linkDeviceToChild(Long childId, Long parentId, String deviceId) {
+    public Mono<Void> linkDeviceToChild(Long childId, Long userId, String deviceId) {
 
     }
 
