@@ -1,50 +1,69 @@
 ```
-# Compiled and build artifacts
+# Java/Maven specific
 *.class
-*.o
-*.obj
+*.jar
+*.war
+*.ear
+*.jpi
+*.hpi
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
 *.so
+*.dylib
 *.dll
 *.exe
 *.out
+
+# Build directories
+target/
 build/
 dist/
-target/
+out/
 
 # Dependencies
 node_modules/
-venv/
-.venv/
-__pycache__/
-.mypy_cache/
-.pytest_cache/
-.gradle/
-target/
+vendor/
+.libs/
+.depend/
 
-# Logs and temp files
-*.log
-*.tmp
+# IDE files
+.vscode/
+.idea/
 *.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+.log
 
 # Environment
 .env
 .env.local
 *.env.*
 
-# Editors
-.vscode/
-.idea/
-
-# System files
-.DS_Store
-Thumbs.db
-
-# Coverage
+# Coverage reports
 coverage/
 htmlcov/
 .coverage
 
-# Compressed files
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Package manager caches
+.gradle/
+.mypy_cache/
+.pytest_cache/
+.npm/
+.yarn/
+
+# Compression files
 *.zip
 *.gz
 *.tar
