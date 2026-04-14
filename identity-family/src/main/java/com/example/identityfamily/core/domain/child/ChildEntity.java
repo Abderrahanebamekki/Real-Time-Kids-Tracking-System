@@ -24,6 +24,8 @@ public class ChildEntity {
 
     private String lastName;
 
+    private int age ;
+
     @OneToMany(mappedBy = "child")
     private List<ParentChildEntity> parents;
 }

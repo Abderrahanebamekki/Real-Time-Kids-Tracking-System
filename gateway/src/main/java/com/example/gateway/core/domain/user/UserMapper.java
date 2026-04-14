@@ -6,7 +6,7 @@ public class UserMapper {
         return UserEntity.builder()
                 .password(userRequest.getPassword())
                 .username(userRequest.getUsername())
-                .role(userRequest.getRole())
+                .role(Role.USER)
                 .build();
     }
 

@@ -7,6 +7,7 @@ public class ChildMapper {
         return ChildEntity.builder()
                 .firstName(childDto.getFirstName())
                 .lastName(childDto.getLastName())
+                .age(childDto.getAge())
                 .build();
 
     }
@@ -16,6 +17,7 @@ public class ChildMapper {
                 .id(childEntity.getId())
                 .firstName(childEntity.getFirstName())
                 .lastName(childEntity.getLastName())
+                .age(childEntity.getAge())
                 .build();
     }
 

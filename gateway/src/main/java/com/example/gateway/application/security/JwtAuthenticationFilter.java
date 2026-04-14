@@ -63,17 +63,14 @@ public class JwtAuthenticationFilter implements GlobalFilter {
         String jwt = authHeader.substring(7);
 
         try {
-//            if (!jwtService.validateToken(jwt)) {
-//                return writeError(exchange, HttpStatus.UNAUTHORIZED, "Invalid token");
-//            }
-
             String username = jwtService.extractUsername(jwt);
 
             return userRepository.findByUsername(username)
                     .flatMap(user -> {
-                        var authentication = new UsernamePasswordAuthenticationToken(
-                                user, null, user.getAuthorities()
-                        );
+                        UsernamePasswordAuthenticationToken authentication =
+                                new UsernamePasswordAuthenticationToken(
+                                        user, null, user.getAuthorities()
+                                );
 
                         ServerHttpRequest mutated = exchange.getRequest().mutate()
                                 .header("X-User-Id", user.getId().toString())
@@ -87,7 +84,7 @@ public class JwtAuthenticationFilter implements GlobalFilter {
                     .switchIfEmpty(writeError(exchange, HttpStatus.UNAUTHORIZED, "User not found"));
 
         } catch (JwtException | IllegalArgumentException e) {
-            return writeError(exchange, HttpStatus.UNAUTHORIZED, "Authentication failed");
+            return writeError(exchange, HttpStatus.UNAUTHORIZED, "Invalid or expired token");
         }
     }
 
@@ -95,9 +92,13 @@ public class JwtAuthenticationFilter implements GlobalFilter {
         exchange.getResponse().setStatusCode(status);
         exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
-        var body = Map.of("error", status.getReasonPhrase(), "message", message);
-        byte[] bytes = JsonEscapeUtil.jsonEscapeString(body.toString()).getBytes(StandardCharsets.UTF_8);
-        DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(bytes);
+        String json = """
+            {"error":"%s","message":"%s"}
+            """.formatted(status.getReasonPhrase(), message);
+
+        DataBuffer buffer = exchange.getResponse()
+                .bufferFactory()
+                .wrap(json.getBytes(StandardCharsets.UTF_8));
 
         return exchange.getResponse().writeWith(Mono.just(buffer));
     }

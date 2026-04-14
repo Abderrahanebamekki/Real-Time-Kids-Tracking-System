@@ -22,18 +22,17 @@ public class ParentDto {
     @NotBlank(message = "phoneNumber is required")
     @Size(max = 12)
     private String phoneNumber;
-    private long user_id;
 
 
-    @PrePersist
-    private String formatPhoneNumber(String phoneNumber) {
 
-        if (phoneNumber.length() != 10) {
+    public String formatPhoneNumber() {
+
+        if (this.phoneNumber.length() != 10) {
             throw new PhoneNumberNotValid();
         }
 
-        if (phoneNumber.startsWith("0")) {
-            phoneNumber = "213" + phoneNumber.substring(1);
+        if (this.phoneNumber.startsWith("0")) {
+            this.phoneNumber = "213" + this.phoneNumber.substring(1);
         }
 
         return phoneNumber;

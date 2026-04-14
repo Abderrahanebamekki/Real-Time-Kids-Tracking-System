@@ -92,6 +92,20 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+
+		<dependency>
+			<groupId>net.devh</groupId>
+			<artifactId>grpc-server-spring-boot-starter</artifactId>
+			<version>3.1.0.RELEASE</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.example</groupId>
+			<artifactId>family-proto</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>

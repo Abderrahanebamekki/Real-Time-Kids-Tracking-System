@@ -9,5 +9,6 @@ import java.util.Optional;
 @Repository
 public interface ParentRepository extends JpaRepository<ParentEntity, Long> {
     boolean existsByPhoneNumber(String phoneNumber);
-    Optional<ParentEntity> findByUserId(long userId);
+    Optional<ParentEntity> findByUserId(Long userId);
+    ParentEntity findByPhoneNumber(String phoneNumber);
 }

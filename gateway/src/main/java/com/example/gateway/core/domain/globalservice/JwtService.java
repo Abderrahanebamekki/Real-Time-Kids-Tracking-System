@@ -17,11 +17,9 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    @Value("${security.jwt.secret-key}")
-    private String secretKey;
+    private final String secretKey = "KGrVIqHDak57oXXtm0P8olLAs+yUuLSsQninbC7o4Sc=";
 
-    @Value("${security.jwt.expiration-time}")
-    private long jwtExpiration;
+    private final long jwtExpiration = 7676698;
 
     public String buildJwt(Map<String, Object> extraClaims, UserDetails userDetails) {
         return Jwts.builder()

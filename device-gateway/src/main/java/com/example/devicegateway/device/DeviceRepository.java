@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface deviceRepository extends R2dbcRepository<DeviceEntity, UUID> {
+public interface DeviceRepository extends R2dbcRepository<DeviceEntity, String> {
 }

@@ -11,15 +11,15 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table("devices")
+@Table("device")
 public class DeviceEntity {
 
     @Id
-    private UUID deviceId;
+    private String deviceId;
     private String secret_key;
     private boolean status;
     private int battery_level;
-    private Long user_id;
-    private Long child_id;
+    private Long parentId;
+    private Long childId;
 
 }

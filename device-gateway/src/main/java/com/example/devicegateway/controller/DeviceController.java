@@ -8,23 +8,25 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v1/device")
+@RequestMapping("/device")
 @RequiredArgsConstructor
 public class DeviceController {
 
     private final DeviceService deviceService;
 
-    @PostMapping("/link_child_to_device/{parent_id}")
+    @PostMapping("/link_child_to_device")
     public Mono<ResponseEntity<Void>> linkChildToDevice(
             @RequestParam Long child_id,
-            @PathVariable Long parent_id,
+            @RequestHeader("X-User-Id") String userId,
             @RequestParam String device_id) {
 
-        return deviceService.linkDeviceToChild(child_id, parent_id, device_id)
+        return deviceService.linkDeviceToChild(child_id, Long.parseLong(userId), device_id)
                 .map(result -> ResponseEntity
                         .ok()
                         .body(result)
                 );
     }
+
+
 
 }

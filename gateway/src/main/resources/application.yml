@@ -23,6 +23,11 @@ spring:
               uri: lb://IDENTITY-FAMILY
               predicates:
                 - Path=/identity/**
+
+            - id: device-gateway
+              uri: lb://DEVICE-GATEWAY
+              predicates:
+                - Path=/device/**
   mail:
     host: smtp.gmail.com
     port: 587
@@ -49,3 +54,4 @@ logging:
     org.springframework.r2dbc: DEBUG
     io.r2dbc.postgresql: DEBUG
     org.postgresql: DEBUG
+

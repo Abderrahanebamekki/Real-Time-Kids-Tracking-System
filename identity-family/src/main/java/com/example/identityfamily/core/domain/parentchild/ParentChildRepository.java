@@ -11,4 +11,5 @@ import java.util.Optional;
 @Repository
 public interface ParentChildRepository extends JpaRepository<ParentChildEntity, Long> {
     Optional<ParentChildEntity> findByParentAndChild(ParentEntity parent, ChildEntity child);
+    Boolean existsByParentAndChild(ParentEntity parent, ChildEntity child);
 }

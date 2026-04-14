@@ -16,4 +16,6 @@ public class ChildDto {
 
     private String lastName;
 
+    private int age;
+
 }

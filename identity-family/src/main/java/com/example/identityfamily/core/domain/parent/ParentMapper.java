@@ -14,6 +14,7 @@ public class ParentMapper {
 
     public static ParentDto mapToDto(ParentEntity parentEntity) {
         return ParentDto.builder()
+                .id(parentEntity.getId())
                 .firstName(parentEntity.getFirstName())
                 .lastName(parentEntity.getLastName())
                 .phoneNumber(parentEntity.getPhoneNumber())

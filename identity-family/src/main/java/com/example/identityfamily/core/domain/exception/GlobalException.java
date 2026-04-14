@@ -20,4 +20,9 @@ public class GlobalException {
     public ResponseEntity<String> phoneNumberAlreadyExist(PhoneNumberAlreadyExist ex){
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
+    @ExceptionHandler(ParentNotExist.class)
+    public ResponseEntity<String> parentNotExist(ParentNotExist ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
 }

@@ -21,12 +21,15 @@ public class ParentChildEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id", nullable = false)
     private ParentEntity parent;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "child_id", nullable = false)
     private ChildEntity child;
 
-    @OneToOne(mappedBy = "parentChild")
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "permission_id", unique = true)
     private PermissionEntity permission;
 
     private Role role;

@@ -23,6 +23,6 @@ public class ParentEntity {
     @Column(unique = true, nullable = false)
     private String phoneNumber;
 
-    private long user_id;
+    private Long userId;
 
 }

@@ -59,14 +59,12 @@ public class UserServiceImpl implements UserService {
                                 VerificationCodeEntity code = VerificationCodeEntity.createForUser(savedUser.getId());
 
                                 return verificationCodeRepository.save(code)
-                                        .doOnSuccess(vc -> {
-                                            assert vc != null;
-                                            emailService.sendVerificationEmail(
-                                                    savedUser.getUsername(),
-                                                    vc.getCode()
-                                            );
-                                        })
-                                        .thenReturn(savedUser.getId());
+                                        .flatMap(savedCode ->
+                                                emailService.sendVerificationEmail(
+                                                        savedUser.getUsername(),
+                                                        savedCode.getCode()
+                                                ).thenReturn(savedUser.getId())
+                                        );
                             });
                 }));
     }

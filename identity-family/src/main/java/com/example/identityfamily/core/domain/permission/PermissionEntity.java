@@ -16,12 +16,11 @@ public class PermissionEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private boolean canAddZone;
-    private boolean canDeleteZone;
-    private boolean canAddSafeRoute;
-    private boolean canDeleteSafeRoute;
+    private boolean canAddZone = false;
+    private boolean canDeleteZone= false;
+    private boolean canAddSafeRoute = false;
+    private boolean canDeleteSafeRoute= false;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_child_id")
+    @OneToOne(mappedBy = "permission", fetch = FetchType.LAZY)
     private ParentChildEntity parentChild;
 }

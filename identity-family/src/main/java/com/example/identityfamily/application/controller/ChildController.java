@@ -10,30 +10,22 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/children")
+@RequestMapping("/identity/v1/children")
 @RequiredArgsConstructor
 public class ChildController {
 
     private final ChildService childService;
 
-    @PostMapping("/parent/{parentId}")
+    @PostMapping("/child")
     public ResponseEntity<ChildDto> addChild(
             @RequestBody ChildDto childDto,
-            @PathVariable Long parentId) {
+            @RequestHeader("X-User-Id") String userId) {
 
-        ChildDto child = childService.addChild(childDto, parentId);
+        ChildDto child = childService.addChild(childDto, Long.parseLong(userId));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(child);
     }
 
-    @PostMapping("/{childId}/guarantors/{parentId}")
-    public ResponseEntity<Void> addGuarantor(
-            @RequestBody PermissionDto permissionDto,
-            @PathVariable Long parentId,
-            @PathVariable Long childId) {
 
-        childService.addGuarantor(permissionDto, parentId, childId);
 
-        return ResponseEntity.noContent().build();
-    }
 }
