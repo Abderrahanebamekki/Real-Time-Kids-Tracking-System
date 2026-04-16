@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import static reactor.netty.http.HttpConnectionLiveness.log;
+
 @Service
 @RequiredArgsConstructor
 public class IngestionRoutingService {
@@ -33,10 +35,21 @@ public class IngestionRoutingService {
     }
 
     private Mono<Void> publishVitals(String deviceId, JsonNode node) {
+        double latitude = node.get("heartbeats").asDouble();
+        double longitude = node.get("oxygenLevel").asDouble();
+
+        log.info("📍 GPS received from device [{}]: lat={}, lon={}, speed={}, temp={}",
+                deviceId, latitude, longitude);
         return Mono.empty();
     }
 
     private Mono<Void> publishGps(String deviceId, JsonNode node) {
+        double latitude = node.get("latitude").asDouble();
+        double longitude = node.get("longitude").asDouble();
+        double speed = node.get("speed").asDouble();
+
+        log.info("📍 GPS received from device [{}]: lat={}, lon={}, speed={}, temp={}",
+                deviceId, latitude, longitude, speed);
         return Mono.empty();
     }
 
