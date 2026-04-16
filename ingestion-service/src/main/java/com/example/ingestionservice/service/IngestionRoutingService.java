@@ -1,4 +1,4 @@
-package com.example.ingestionservice.mqtt;
+package com.example.ingestionservice.service;
 
 import com.example.ingestionservice.exception.TopicNotSupported;
 import com.fasterxml.jackson.databind.JsonNode;

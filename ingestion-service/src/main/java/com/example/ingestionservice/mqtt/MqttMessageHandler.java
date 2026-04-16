@@ -1,5 +1,6 @@
 package com.example.ingestionservice.mqtt;
 
+import com.example.ingestionservice.service.IngestionRoutingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.integration.mqtt.support.MqttHeaders;
 import org.springframework.messaging.Message;
