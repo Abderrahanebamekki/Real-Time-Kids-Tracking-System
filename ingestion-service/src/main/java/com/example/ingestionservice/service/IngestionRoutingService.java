@@ -4,17 +4,20 @@ import com.example.ingestionservice.exception.TopicNotSupported;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import static reactor.netty.http.HttpConnectionLiveness.log;
 
 @Service
-@RequiredArgsConstructor
 public class IngestionRoutingService {
     private final ObjectMapper objectMapper;
+    private final KafkaTemplate<String, JsonNode> kafkaTemplate;
 
-    public  IngestionRoutingService() {
+
+    public  IngestionRoutingService(KafkaTemplate<String, JsonNode> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -44,14 +47,19 @@ public class IngestionRoutingService {
     }
 
     private Mono<Void> publishGps(String deviceId, JsonNode node) {
-        double latitude = node.get("latitude").asDouble();
-        double longitude = node.get("longitude").asDouble();
-        double speed = node.get("speed").asDouble();
+        assert verifyGpsData(node);
 
-        log.info("📍 GPS received from device [{}]: lat={}, lon={}, speed={}, temp={}",
-                deviceId, latitude, longitude, speed);
-        return Mono.empty();
+        return Mono.fromFuture(
+                        kafkaTemplate.send("gps", deviceId, node)
+                                .toCompletableFuture()
+                )
+                .doOnSuccess(v -> System.out.println("Sent GPS for " + deviceId))
+                .doOnError(e -> System.err.println("Kafka error: " + e.getMessage()))
+                .then();
     }
 
+    private Boolean verifyGpsData(JsonNode node) {
+        return true;
+    }
 
 }
