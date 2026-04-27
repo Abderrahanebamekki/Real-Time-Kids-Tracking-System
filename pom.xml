@@ -23,6 +23,7 @@
     </developers>
     <modules>
         <module>family-proto</module>
+        <module>device-proto</module>
     </modules>
     <scm>
         <connection/>

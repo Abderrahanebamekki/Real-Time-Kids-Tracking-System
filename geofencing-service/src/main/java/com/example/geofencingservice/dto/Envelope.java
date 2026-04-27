@@ -1,4 +1,4 @@
-package com.example.ingestionservice.domain;
+package com.example.geofencingservice.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

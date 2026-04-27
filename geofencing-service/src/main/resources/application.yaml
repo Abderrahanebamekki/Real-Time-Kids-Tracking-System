@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: geofencing-service
+
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/geofencing
+    username: postgres
+    password: 12345678
+    pool:
+      enabled: true
+      max-size: 10
+      initial-size: 5
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+    consumer:
+      group-id: geofencing-service
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: com.example.geofencingservice.dto.Envelope
+
+app:
+  kafka:
+    topics:
+      gps: gps
+server:
+  port: 8086

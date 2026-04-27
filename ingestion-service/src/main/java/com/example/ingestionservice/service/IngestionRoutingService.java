@@ -1,6 +1,8 @@
 package com.example.ingestionservice.service;
 
+import com.example.ingestionservice.domain.Envelope;
 import com.example.ingestionservice.exception.TopicNotSupported;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -8,15 +10,18 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.Instant;
+import java.util.UUID;
+
 import static reactor.netty.http.HttpConnectionLiveness.log;
 
 @Service
 public class IngestionRoutingService {
     private final ObjectMapper objectMapper;
-    private final KafkaTemplate<String, JsonNode> kafkaTemplate;
+    private final KafkaTemplate<String, Envelope<JsonNode>> kafkaTemplate;
 
 
-    public  IngestionRoutingService(KafkaTemplate<String, JsonNode> kafkaTemplate) {
+    public  IngestionRoutingService(KafkaTemplate<String, Envelope<JsonNode>> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
         this.objectMapper = new ObjectMapper();
     }
@@ -49,8 +54,14 @@ public class IngestionRoutingService {
     private Mono<Void> publishGps(String deviceId, JsonNode node) {
         assert verifyGpsData(node);
 
+        Envelope<JsonNode> envelope = Envelope.<JsonNode>builder()
+                .eventId(UUID.randomUUID())
+                .payload(node)
+                .timestamp(Instant.now())
+                .deviceId(deviceId)
+                .build();
         return Mono.fromFuture(
-                        kafkaTemplate.send("gps", deviceId, node)
+                        kafkaTemplate.send("gps", deviceId, envelope)
                                 .toCompletableFuture()
                 )
                 .doOnSuccess(v -> System.out.println("Sent GPS for " + deviceId))

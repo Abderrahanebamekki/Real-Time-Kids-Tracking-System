@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package device;
+
+option java_package = "com.example.device.grpc";
+option java_multiple_files = true;
+
+message DeviceRequest {
+  string deviceId = 1;
+}
+
+message ChildResponse {
+  int64 childId = 1;
+}
+
+service DeviceService {
+  rpc GetChildByDeviceId(DeviceRequest) returns (ChildResponse);
+}
