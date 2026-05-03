@@ -4,9 +4,9 @@ package com.example.identityfamily.application.grpc;
 
 import com.example.identityfamily.core.domain.child.ChildService;
 import com.example.identityfamily.core.domain.parent.ParentService;
-import com.example.identityfamily.grpc.GetParentIdRequest;
-import com.example.identityfamily.grpc.GetParentIdResponse;
-import com.example.identityfamily.grpc.IdentityFamilyServiceGrpc;
+import com.example.family.grpc.GetParentIdRequest;
+import com.example.family.grpc.GetParentIdResponse;
+import com.example.family.grpc.IdentityFamilyServiceGrpc;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;

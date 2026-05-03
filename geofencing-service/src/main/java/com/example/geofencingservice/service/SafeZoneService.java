@@ -5,6 +5,7 @@ import com.example.geofencingservice.dto.SafeZoneRequest;
 import com.example.geofencingservice.dto.SafeZoneResponse;
 import com.example.geofencingservice.safe_zone.SafeZoneRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.support.LoggingProducerListener;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -14,6 +15,7 @@ import reactor.core.publisher.Mono;
 public class SafeZoneService {
 
     private final SafeZoneRepository safeZoneRepository;
+    private final LoggingProducerListener loggingProducerListener;
 
     public Mono<Void> createSafeZone(SafeZoneRequest safeZone) {
         return safeZoneRepository.insertSafeZone(
@@ -40,5 +42,6 @@ public class SafeZoneService {
     public Mono<Void> deleteSafeZone(Long id){
         return safeZoneRepository.deleteById(id);
     }
+
 
 }

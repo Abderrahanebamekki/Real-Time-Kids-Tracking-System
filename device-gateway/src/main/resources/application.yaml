@@ -1,4 +1,7 @@
 spring:
+  autoconfigure:
+    exclude:
+      - net.devh.boot.grpc.server.autoconfigure.GrpcServerMetricAutoConfiguration
   application:
     name: device-gateway
   r2dbc:
@@ -14,3 +17,20 @@ jwt:
   expiration: 86400000
 server:
   port: 8085
+
+grpc:
+  server:
+    port: 9093
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+  info:
+    env:
+      enabled: true # Expose environment variables in /actuator/info

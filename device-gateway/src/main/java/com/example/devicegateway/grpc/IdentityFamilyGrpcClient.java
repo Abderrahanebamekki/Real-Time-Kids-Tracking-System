@@ -1,8 +1,8 @@
 package com.example.devicegateway.grpc;
 
-import com.example.identityfamily.grpc.GetParentIdRequest;
-import com.example.identityfamily.grpc.GetParentIdResponse;
-import com.example.identityfamily.grpc.IdentityFamilyServiceGrpc;
+import com.example.family.grpc.GetParentIdRequest;
+import com.example.family.grpc.GetParentIdResponse;
+import com.example.family.grpc.IdentityFamilyServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;

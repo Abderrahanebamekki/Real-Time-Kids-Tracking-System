@@ -1,11 +1,11 @@
 package com.example.ingestionservice.service;
 
 import com.example.ingestionservice.domain.Envelope;
+import com.example.ingestionservice.domain.GPS;
 import com.example.ingestionservice.exception.TopicNotSupported;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -18,10 +18,10 @@ import static reactor.netty.http.HttpConnectionLiveness.log;
 @Service
 public class IngestionRoutingService {
     private final ObjectMapper objectMapper;
-    private final KafkaTemplate<String, Envelope<JsonNode>> kafkaTemplate;
+    private final KafkaTemplate<String, Envelope<GPS>> kafkaTemplate;
 
 
-    public  IngestionRoutingService(KafkaTemplate<String, Envelope<JsonNode>> kafkaTemplate) {
+    public  IngestionRoutingService(KafkaTemplate<String, Envelope<GPS>> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
         this.objectMapper = new ObjectMapper();
     }
@@ -51,12 +51,12 @@ public class IngestionRoutingService {
         return Mono.empty();
     }
 
-    private Mono<Void> publishGps(String deviceId, JsonNode node) {
+    private Mono<Void> publishGps(String deviceId, JsonNode node) throws JsonProcessingException {
         assert verifyGpsData(node);
-
-        Envelope<JsonNode> envelope = Envelope.<JsonNode>builder()
+        GPS gps = objectMapper.treeToValue(node , GPS.class);
+        Envelope<GPS> envelope = Envelope.<GPS>builder()
                 .eventId(UUID.randomUUID())
-                .payload(node)
+                .payload(gps)
                 .timestamp(Instant.now())
                 .deviceId(deviceId)
                 .build();

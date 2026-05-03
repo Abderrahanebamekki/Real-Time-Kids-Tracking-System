@@ -8,9 +8,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Builder
-public record Envelope<T>(
+public record Envelope(
         @NotNull UUID eventId,
         @NotBlank String deviceId,
         @NotNull Instant timestamp,
-        @NotNull T payload
+        @NotNull GPS payload
 ) {}

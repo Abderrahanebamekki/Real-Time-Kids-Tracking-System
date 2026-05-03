@@ -11,12 +11,12 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/safezones")
+@RequestMapping("/safezones")
 @RequiredArgsConstructor
 public class SafeZoneController {
     private final SafeZoneService safeZoneService;
 
-    @PostMapping
+    @PostMapping("/")
     public Mono<ResponseEntity<Void>> createSafeZone(@RequestBody SafeZoneRequest request) {
         return safeZoneService.createSafeZone(request)
                 .thenReturn(ResponseEntity.status(HttpStatus.CREATED).build());

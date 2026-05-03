@@ -1,24 +1,124 @@
 package com.example.geofencingservice.service;
 
 import com.example.geofencingservice.dto.Envelope;
+import com.example.geofencingservice.dto.LastSafeZone;
+import com.example.geofencingservice.grpc.DeviceGrpcClient;
 import com.example.geofencingservice.safe_zone.SafeZoneRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.JsonNode;
+import reactor.core.publisher.Mono;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class KafkaConsumerService {
 
-    private final SafeZoneRepository  safeZoneRepository;
+    private static final double MAX_SPEED_THRESHOLD = 7;
+    private final SafeZoneRepository safeZoneRepository;
+    private final DeviceGrpcClient deviceGrpcClient;
+    private final RedisService redisService;
+
 
     @KafkaListener(topics = "${app.kafka.topics.gps}")
-    public void consume(Envelope<JsonNode> event) {
-        event.
-        System.out.println(event);
+    public void consume(Envelope event) {
+        getChildId(event.deviceId())
+                .flatMap(childId -> Mono.when(
+                        processLocation(childId, event) ,
+                        processSpeed(childId, event)
+                ))
+                .subscribe();
+    }
+
+
+    private Mono<String> getChildId(String deviceId) {
+        return redisService.getChild(deviceId)
+                .switchIfEmpty(
+                        deviceGrpcClient.getChildIdByDeviceId(deviceId)
+                                .flatMap(childId ->
+                                        redisService.saveChild(deviceId, childId)
+                                )
+                );
+    }
+
+    private Mono<Void> processLocation(String childId, Envelope event) {
+        return safeZoneRepository.findZoneNamesContainingLocation(
+                        Long.parseLong(childId),
+                        event.payload().longitude(),
+                        event.payload().latitude()
+                )
+                .map(Optional::of)
+                .defaultIfEmpty(Optional.empty())
+                .flatMap(optZone -> {
+                    return optZone.map(s -> handleChildInSafeZone(childId, s)).orElseGet(() -> handleChildOutsideSafeZone(childId));
+                });
+    }
+
+    private Mono<Void> handleChildInSafeZone(String childId, String currentSafeZoneName) {
+
+        return redisService.getLastSafeZone(childId)
+                .flatMap(lastSafeZone -> {
+                    if (!currentSafeZoneName.equals(lastSafeZone.nameOfLastZone()) || !lastSafeZone.isInside()) {
+                        return updateSafeZoneAndPublish(childId, currentSafeZoneName);
+                    }
+
+                    return Mono.empty();
+                })
+                .then();
+    }
+
+    private Mono<Void> handleChildOutsideSafeZone(String childId) {
+        return redisService.getLastSafeZone(childId)
+                .flatMap(lastSafeZone -> {
+                    if (lastSafeZone.isInside()) {
+                        return clearSafeZoneAndPublish(childId, lastSafeZone.nameOfLastZone());
+                    }
+                    return Mono.empty();
+                });
+    }
+
+    private Mono<Void> updateSafeZoneAndPublish(String childId, String safeZoneName) {
+        LastSafeZone newSafeZone = LastSafeZone.builder()
+                .nameOfLastZone(safeZoneName)
+                .isInside(true)
+                .build();
+
+        return redisService.saveLastSafeZone(childId, newSafeZone)
+                .then(publishSafeZoneEvent(childId, safeZoneName, "ENTERED"));
+    }
+
+    private Mono<Void> clearSafeZoneAndPublish(String childId, String previousZoneName) {
+        return redisService.updateLastSafeZone(childId)
+                .then(publishSafeZoneEvent(childId, previousZoneName, "EXITED"));
+    }
+
+    private Mono<Void> publishSafeZoneEvent(String childId, String safeZoneName, String eventType) {
+        log.info(
+                "Publishing event - ChildId: {}, SafeZone: {}, EventType: {}",
+                childId,
+                safeZoneName,
+                eventType
+        );
+
+        return Mono.empty();
+    }
+
+    private Mono<Void> processSpeed(String childId, Envelope event) {
+        double speed = event.payload().speed();
+
+        if (speed > MAX_SPEED_THRESHOLD) {
+            return publishSpeedAlert(childId, speed);
+        }
+
+        return Mono.empty();
+    }
+
+    private Mono<Void> publishSpeedAlert(String childId, double speed) {
+        // TODO: Implement RabbitMQ publishing
+        log.warn("Speed alert - ChildId: {}, Speed: {}", childId, speed);
+        return Mono.empty();
     }
 }

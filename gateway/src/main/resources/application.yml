@@ -28,6 +28,11 @@ spring:
               uri: lb://DEVICE-GATEWAY
               predicates:
                 - Path=/device/**
+
+            - id: geofencing-service
+              uri: lb://GEOFENCING-SERVICE
+              predicates:
+                - Path=/safezones/**
   mail:
     host: smtp.gmail.com
     port: 587
