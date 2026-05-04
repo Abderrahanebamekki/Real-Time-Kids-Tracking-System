@@ -2,15 +2,15 @@ package com.example.identityfamily.application.grpc;
 
 
 
+import com.example.family.grpc.*;
 import com.example.identityfamily.core.domain.child.ChildService;
 import com.example.identityfamily.core.domain.parent.ParentService;
-import com.example.family.grpc.GetParentIdRequest;
-import com.example.family.grpc.GetParentIdResponse;
-import com.example.family.grpc.IdentityFamilyServiceGrpc;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.service.GrpcService;
+
+import java.util.List;
 
 @GrpcService
 @RequiredArgsConstructor
@@ -50,5 +50,24 @@ public class IdentityFamilyGrpcEndpoint extends IdentityFamilyServiceGrpc.Identi
                             .asRuntimeException()
             );
         }
+    }
+
+    @Override
+    public void getUsersIdByChild(ChildRequest request , StreamObserver<UserResponse> responseObserver){
+        try {
+            List<Long> parents = parentService.getAllParents(request.getChildId());
+
+            UserResponse response = UserResponse.newBuilder()
+                    .addAllUsers(parents)
+                    .build();
+
+            responseObserver.onNext(response);
+
+        } catch (Exception e) {
+            responseObserver.onError(e);
+            return;
+        }
+
+        responseObserver.onCompleted();
     }
 }

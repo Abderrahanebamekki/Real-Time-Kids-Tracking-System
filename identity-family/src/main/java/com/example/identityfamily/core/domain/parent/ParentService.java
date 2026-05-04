@@ -12,4 +12,5 @@ public interface ParentService {
     public List<InvitationDto> getInvitations(Long userId);
     public void acceptInvitation(Long invitationId,Long userId);
     public void declineInvitation(Long invitationId,Long userId);
+    List<Long> getAllParents(Long childId);
 }

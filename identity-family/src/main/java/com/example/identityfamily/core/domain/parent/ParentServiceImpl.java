@@ -9,6 +9,7 @@ import com.example.identityfamily.core.domain.child.ChildRepository;
 import com.example.identityfamily.core.domain.exception.ParentNotExist;
 import com.example.identityfamily.core.domain.exception.PhoneNumberAlreadyExist;
 import com.example.identityfamily.core.domain.parentchild.ParentChildEntity;
+import com.example.identityfamily.core.domain.parentchild.ParentChildRepository;
 import com.example.identityfamily.core.domain.parentchild.Role;
 import com.example.identityfamily.core.domain.permission.PermissionEntity;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class ParentServiceImpl implements ParentService {
     private final ParentRepository parentRepository;
     private final ChildRepository childRepository;
     private final CoParentInvitationRepository coParentInvitationRepository;
+    private final ParentChildRepository  parentChildRepository;
 
 
     @Override
@@ -105,5 +107,10 @@ public class ParentServiceImpl implements ParentService {
         }else {
             throw new RuntimeException("You are not the receiver of this invitation");
         }
+    }
+
+    @Override
+    public List<Long> getAllParents(Long childId) {
+        return parentChildRepository.getAllUsersByChildId(childId);
     }
 }

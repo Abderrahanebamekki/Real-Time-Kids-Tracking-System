@@ -2,6 +2,8 @@ package com.example.geofencingservice.service;
 
 import com.example.geofencingservice.dto.Envelope;
 import com.example.geofencingservice.dto.LastSafeZone;
+import com.example.geofencingservice.dto.SafeZoneEvent;
+import com.example.geofencingservice.dto.SpeedEvent;
 import com.example.geofencingservice.grpc.DeviceGrpcClient;
 import com.example.geofencingservice.safe_zone.SafeZoneRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ public class KafkaConsumerService {
     private final SafeZoneRepository safeZoneRepository;
     private final DeviceGrpcClient deviceGrpcClient;
     private final RedisService redisService;
+    private final RabbitMqService rabbitMqService;
 
 
     @KafkaListener(topics = "${app.kafka.topics.gps}")
@@ -96,14 +99,14 @@ public class KafkaConsumerService {
     }
 
     private Mono<Void> publishSafeZoneEvent(String childId, String safeZoneName, String eventType) {
-        log.info(
-                "Publishing event - ChildId: {}, SafeZone: {}, EventType: {}",
-                childId,
-                safeZoneName,
-                eventType
-        );
+        SafeZoneEvent event = SafeZoneEvent.builder()
+                .childId(Long.parseLong(childId))
+                .eventType(eventType)
+                .safezoneName(safeZoneName)
+                .build();
 
-        return Mono.empty();
+        return rabbitMqService.sendNotification(event);
+
     }
 
     private Mono<Void> processSpeed(String childId, Envelope event) {
@@ -117,8 +120,10 @@ public class KafkaConsumerService {
     }
 
     private Mono<Void> publishSpeedAlert(String childId, double speed) {
-        // TODO: Implement RabbitMQ publishing
-        log.warn("Speed alert - ChildId: {}, Speed: {}", childId, speed);
-        return Mono.empty();
+        SpeedEvent event = SpeedEvent.builder()
+                .speed(speed)
+                .childId(Long.parseLong(childId))
+                .build();
+        return rabbitMqService.sendSpeedAlert(event);
     }
 }

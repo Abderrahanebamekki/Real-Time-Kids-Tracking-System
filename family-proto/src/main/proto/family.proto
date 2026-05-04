@@ -8,6 +8,15 @@ option java_outer_classname = "IdentityFamilyProto";
 
 service IdentityFamilyService {
   rpc GetParentId(GetParentIdRequest) returns (GetParentIdResponse);
+  rpc GetUsersIdByChild(ChildRequest) returns (UserResponse);
+}
+
+message ChildRequest{
+  int64 childId = 1 ;
+}
+
+message UserResponse{
+  repeated int64 users =1;
 }
 
 message GetParentIdRequest {

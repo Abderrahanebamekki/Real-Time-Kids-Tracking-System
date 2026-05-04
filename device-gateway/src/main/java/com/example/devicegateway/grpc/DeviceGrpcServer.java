@@ -4,9 +4,11 @@ import com.example.device.grpc.ChildResponse;
 import com.example.device.grpc.DeviceRequest;
 import com.example.device.grpc.DeviceServiceGrpc;
 import com.example.devicegateway.device.DeviceRepository;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.service.GrpcService;
+import reactor.core.publisher.Mono;
 
 @GrpcService
 @RequiredArgsConstructor
@@ -20,8 +22,9 @@ public class DeviceGrpcServer extends DeviceServiceGrpc.DeviceServiceImplBase{
                 .map(deviceEntity -> ChildResponse.newBuilder()
                         .setChildId(deviceEntity.getChildId())
                         .build())
-                .subscribe(responseObserver::onNext, responseObserver::onError);
-    }
-
-
-}
+                .subscribe(
+                        responseObserver::onNext,
+                        responseObserver::onError,
+                        responseObserver::onCompleted
+                );
+    }}

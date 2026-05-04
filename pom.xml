@@ -24,6 +24,7 @@
     <modules>
         <module>family-proto</module>
         <module>device-proto</module>
+        <module>identity-family</module>
     </modules>
     <scm>
         <connection/>
