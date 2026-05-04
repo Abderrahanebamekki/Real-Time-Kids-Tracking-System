@@ -1,7 +1,11 @@
 spring:
   application:
     name: geofencing-service
-
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin
   data:
     redis:
       host: localhost
