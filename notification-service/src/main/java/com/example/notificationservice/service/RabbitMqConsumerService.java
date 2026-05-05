@@ -6,9 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @Service
 @Slf4j
@@ -28,9 +25,10 @@ public class RabbitMqConsumerService {
 
     @RabbitListener(queues = "${app.rabbitmq.queues.safezone}")
     public void consumeSafeZoneAlert(SafeZoneEvent event) {
+
         grpcClient.getChildName(event.childId())
                 .flatMap(name -> redisService.saveSafeZoneMessage(event.childId(), "The child : "+ name
-                        +" was "+ event.eventType() + " " + event.safeZoneName()))
+                        +" was "+ event.eventType() + " " + event.safezoneName()))
                 .subscribe();
     }
 }
