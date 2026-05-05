@@ -70,4 +70,23 @@ public class IdentityFamilyGrpcEndpoint extends IdentityFamilyServiceGrpc.Identi
 
         responseObserver.onCompleted();
     }
+
+    @Override
+    public void getChildName(ChildRequest request , StreamObserver<ChildResponse> responseObserver){
+        try {
+            String childName = childService.getChildName(request.getChildId());
+
+            ChildResponse response = ChildResponse.newBuilder()
+                    .setChildName(childName)
+                    .build();
+
+            responseObserver.onNext(response);
+
+        } catch (Exception e) {
+            responseObserver.onError(e);
+            return;
+        }
+
+        responseObserver.onCompleted();
+    }
 }

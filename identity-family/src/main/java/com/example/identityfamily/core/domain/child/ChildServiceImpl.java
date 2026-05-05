@@ -78,6 +78,11 @@ public class ChildServiceImpl implements ChildService {
         return false;
     }
 
+    @Override
+    public String getChildName(Long child_id) {
+        return childRepository.getChildName(child_id);
+    }
+
 
     private ParentChildEntity createParentChildRelation(ParentEntity parent, ChildEntity child , Role role , PermissionEntity permission) {
 

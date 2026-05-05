@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: notification-service
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+app:
+  rabbitmq:
+    queues:
+      speed: speed.queue
+      safezone: safezone.queue
+server:
+  port: 8088

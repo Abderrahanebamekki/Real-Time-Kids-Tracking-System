@@ -64,4 +64,5 @@ public class RedisService {
                                     .set(childId, updatedJson));
                 })
                 .then();
-    }}
+    }
+}

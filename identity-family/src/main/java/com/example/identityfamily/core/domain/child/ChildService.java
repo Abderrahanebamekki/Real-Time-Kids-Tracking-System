@@ -7,4 +7,5 @@ public interface ChildService {
     ChildDto addChild(ChildDto childDto , Long userId);
     void addGuarantor(PermissionDto permissionDto , Long child_id , Long parent_id);
     boolean verifyChild(Long child_id , Long parent_id);
+    String getChildName(Long child_id);
 }

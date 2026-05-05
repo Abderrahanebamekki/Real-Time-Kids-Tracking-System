@@ -113,4 +113,6 @@ public class ParentServiceImpl implements ParentService {
     public List<Long> getAllParents(Long childId) {
         return parentChildRepository.getAllUsersByChildId(childId);
     }
+
+
 }
