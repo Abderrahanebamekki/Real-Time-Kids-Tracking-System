@@ -1,116 +1,119 @@
 package com.example.notificationservice.service;
 
+import com.example.notificationservice.dto.MessageType;
+import com.example.notificationservice.dto.NotificationEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Range;
+import org.springframework.data.redis.connection.ReactiveSubscription;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.ReactiveRedisMessageListenerContainer;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class RedisService {
 
-    private final ReactiveStringRedisTemplate redisTemplate;
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private final ReactiveRedisTemplate<String , NotificationEvent> redisTemplateNotification;
+    private final ReactiveStringRedisTemplate stringRedisTemplate;
+    private final ReactiveRedisMessageListenerContainer listenerContainer;
+    private final ObjectMapper objectMapper;
 
-    // =========================
-    // USERS
-    // =========================
 
-    public Mono<Void> saveUsersId(Long childId, List<Long> usersId) {
-        String key = usersKey(childId);
 
-        return redisTemplate.delete(key)
-                .thenMany(
-                        Flux.fromIterable(usersId)
-                                .map(String::valueOf)
-                                .flatMap(userId ->
-                                        redisTemplate.opsForList().rightPush(key, userId)
-                                )
-                )
+
+    public Mono<Void> saveUserSIdForChild(Long childId, List<Long> userId) {
+        String key = "ch:" + childId+":ps";
+
+        Set<ZSetOperations.TypedTuple<String>> tuples = userId.stream()
+                .map(id -> ZSetOperations.TypedTuple.of(
+                        String.valueOf(id),
+                        (double) System.currentTimeMillis()  // score = timestamp
+                ))
+                .collect(Collectors.toSet());
+
+        return stringRedisTemplate.opsForZSet()
+                .addAll(key, tuples)
                 .then();
     }
 
-    public Flux<Long> getUsersId(Long childId) {
-        return redisTemplate.opsForList()
-                .range(usersKey(childId), 0, -1)
-                .map(Long::valueOf);
+    public Flux<Long> getUserIdsForChild(Long childId) {
+        String key = "ch:" + childId+":ps";
+        return stringRedisTemplate.opsForZSet()
+                .range(key, Range.unbounded())
+                .map(Long::parseLong);
     }
-
-    // =========================
-    // SPEED MESSAGES (LIST)
-    // =========================
-
-    public Mono<Void> saveSpeedMessage(Long childId, Object message) {
-        return saveUnreadMessage(speedMessagesKey(childId), message);
-    }
-
-    public Flux<String> getUnreadSpeedMessages(Long childId) {
-        return popAllUnreadMessages(speedMessagesKey(childId));
-    }
-
-    // =========================
-    // SAFEZONE MESSAGES (LIST)
-    // =========================
-
-    public Mono<Void> saveSafeZoneMessage(Long childId, Object message) {
-        return saveUnreadMessage(safeZoneMessagesKey(childId), message);
-    }
-
-    public Flux<String> getUnreadSafeZoneMessages(Long childId) {
-        return popAllUnreadMessages(safeZoneMessagesKey(childId));
-    }
-
-    // =========================
-    // INTERNAL HELPERS
-    // =========================
-
-    private Mono<Void> saveUnreadMessage(String key, Object message) {
-        String json = toJson(message);
-
-        return redisTemplate.opsForList()
-                .rightPush(key, json)   // append to list
+    public Mono<Void> saveChildName(Long childId, String childName) {
+        return stringRedisTemplate.opsForValue()
+                .set("ch:"+ childId.toString() + ":n", childName)
                 .then();
     }
 
-    /**
-     * Pop all unread messages (FIFO) and remove them from Redis
-     */
-    private Flux<String> popAllUnreadMessages(String key) {
-        return Flux.defer(() -> redisTemplate.opsForList().leftPop(key))
-                .repeat()
-                .takeWhile(message -> message != null);
+    public Mono<String> getChildName(Long childId) {
+        return stringRedisTemplate.opsForValue()
+                .get("ch:"+ childId.toString() + ":n");
     }
 
-    // =========================
-    // KEYS
-    // =========================
-
-    private String usersKey(Long childId) {
-        return "child:" + childId + ":users";
+    public Mono<String> saveNotification(String message , MessageType messageType) {
+        String key = UUID.randomUUID().toString();
+        NotificationEvent notificationDto = NotificationEvent.builder()
+                .message(message)
+                .dateTime(LocalDateTime.now())
+                .type(messageType)
+                .build();
+        return redisTemplateNotification.opsForValue()
+                .set(key, notificationDto)
+                .thenReturn(key);
     }
 
-    private String speedMessagesKey(Long childId) {
-        return "ch:" + childId + ":m:speed";
+    public Mono<Void> saveNotificationForParent(Long userId , String messageId){
+        String key = "p:" + userId + ":n";
+        return stringRedisTemplate.opsForZSet()
+                .add(key , messageId , LocalDateTime.now().toEpochSecond(java.time.ZoneOffset.UTC))
+                .then();
     }
 
-    private String safeZoneMessagesKey(Long childId) {
-        return "ch:" + childId + ":m:safezone";
+    public Flux<String> getNotificationForParent(String key) {
+        return stringRedisTemplate.opsForZSet()
+                .range(key, Range.unbounded())
+                .publishOn(Schedulers.boundedElastic())
+                .doOnNext(value -> stringRedisTemplate.opsForZSet()
+                        .remove(key, value)
+                        .subscribe()
+                );
     }
 
-    // =========================
-    // JSON
-    // =========================
-
-    private String toJson(Object object) {
-        try {
-            return objectMapper.writeValueAsString(object);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to convert object to JSON", e);
-        }
+    public Mono<Long> publish(String userId, NotificationEvent message) {
+        String channel = "notification:" + userId;
+        return redisTemplateNotification.convertAndSend(channel, message);
     }
+
+    public Flux<NotificationEvent> subscribe(String userId) {
+        String channel = "notification:" + userId;
+        return listenerContainer
+                .receive(ChannelTopic.of(channel))
+                .map(message -> {
+                    try {
+                        return objectMapper.readValue(
+                                message.getMessage(), NotificationEvent.class
+                        );
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException("Failed to deserialize message", e);
+                    }
+                });
+    }
+
 }

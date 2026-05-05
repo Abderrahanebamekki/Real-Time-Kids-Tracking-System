@@ -17,18 +17,18 @@ public class RabbitMqConsumerService {
 
     @RabbitListener(queues = "${app.rabbitmq.queues.speed}")
     public void consumeSpeedAlert(SpeedEvent event) {
-        grpcClient.getChildName(event.childId())
-                .flatMap(name -> redisService.saveSpeedMessage(event.childId(), "Speed alert for child : "+ name
-                        +" "+ event.speed() + " km/h"))
-                .subscribe();
+//        grpcClient.getChildName(event.childId())
+//                .flatMap(name -> redisService.saveSpeedMessage(event.childId(), "Speed alert for child : "+ name
+//                        +" "+ event.speed() + " km/h"))
+//                .subscribe();
     }
 
     @RabbitListener(queues = "${app.rabbitmq.queues.safezone}")
     public void consumeSafeZoneAlert(SafeZoneEvent event) {
 
-        grpcClient.getChildName(event.childId())
-                .flatMap(name -> redisService.saveSafeZoneMessage(event.childId(), "The child : "+ name
-                        +" was "+ event.eventType() + " " + event.safezoneName()))
-                .subscribe();
+//        grpcClient.getChildName(event.childId())
+//                .flatMap(name -> redisService.saveSafeZoneMessage(event.childId(), "The child : "+ name
+//                        +" was "+ event.eventType() + " " + event.safezoneName()))
+//                .subscribe();
     }
 }
