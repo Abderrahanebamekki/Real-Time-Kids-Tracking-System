@@ -86,43 +86,4 @@ public class RedisService {
                 .get(messageId);
     }
 
-    public Mono<Void> saveNotificationForParent(Long userId , String messageId){
-        log.info("Saving notification for parent: {} , message id: {}", userId, messageId);
-        String key = "p:" + userId + ":n";
-        return stringRedisTemplate.opsForZSet()
-                .add(key , messageId , LocalDateTime.now().toEpochSecond(java.time.ZoneOffset.UTC))
-                .then();
-    }
-
-    public Flux<String> getNotificationForParent(String userId) {
-        String key = "p:" + userId + ":n";
-        return stringRedisTemplate.opsForZSet()
-                .range(key, Range.unbounded())
-                .publishOn(Schedulers.boundedElastic())
-                .doOnNext(value -> stringRedisTemplate.opsForZSet()
-                        .remove(key, value)
-                        .subscribe()
-                );
-    }
-
-//    public Mono<Long> publish(String userId, NotificationEvent message) {
-//        String channel = "notification:" + userId;
-//        return redisTemplateNotification.convertAndSend(channel, message);
-//    }
-//
-//    public Flux<NotificationEvent> subscribe(String userId) {
-//        String channel = "notification:" + userId;
-//        return listenerContainer
-//                .receive(ChannelTopic.of(channel))
-//                .handle((message, sink) -> {
-//                    try {
-//                        sink.next(objectMapper.readValue(
-//                                message.getMessage(), NotificationEvent.class
-//                        ));
-//                    } catch (JsonProcessingException e) {
-//                        sink.error(new RuntimeException("Failed to deserialize message", e));
-//                    }
-//                });
-//    }
-
 }
