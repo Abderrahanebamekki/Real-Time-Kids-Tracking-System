@@ -1,6 +1,7 @@
 package com.example.notificationservice.controller;
 
 import com.example.notificationservice.dto.NotificationEvent;
+import com.example.notificationservice.service.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -16,31 +17,21 @@ import java.time.Duration;
 @Slf4j
 public class NotificationController {
 
-    private final NotificationService notificationService;
+    private final RedisService redisService;
 
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<ServerSentEvent<NotificationEvent>> getNotifications(
-            @RequestHeader("X-User-Id") String userId
+    public Flux<ServerSentEvent<NotificationEvent>> subscribe(
+            @RequestHeader("X-User-Id") String parentId
     ) {
-        Flux<ServerSentEvent<NotificationEvent>> notifications =
-                notificationService.getNotifications(userId)
-                        .map(message -> ServerSentEvent.<NotificationEvent>builder()
-                                .id(String.valueOf(System.currentTimeMillis()))
-                                .event("notification")
-                                .data(message)
-                                .build()
-                        );
-
-        Flux<ServerSentEvent<NotificationEvent>> heartbeat =
-                Flux.interval(Duration.ofSeconds(15))
-                        .map(i -> ServerSentEvent.<NotificationEvent>builder()
-                                .comment("keep-alive")
-                                .build()
-                        );
-
-        return Flux.merge(notifications, heartbeat)
-                .doOnSubscribe(s -> System.out.println("Client connected: " + userId))
-                .doOnCancel(() -> System.out.println("Client disconnected: " + userId))
-                .doOnError(e -> System.out.println("SSE error: " + e.getMessage()));
+        return redisService.subscribe(parentId)
+                .map(event -> ServerSentEvent.<NotificationEvent>builder()
+                        .id(String.valueOf(System.currentTimeMillis()))
+                        .event(event.type().name())
+                        .data(event)
+                        .build()
+                )
+                .doOnSubscribe(s -> log.info("Parent connected: {}", parentId))
+                .doOnCancel(() -> log.info("Parent disconnected: {}", parentId))
+                .doOnError(e -> log.error("SSE error for {}: {}", parentId, e.getMessage()));
     }
 }

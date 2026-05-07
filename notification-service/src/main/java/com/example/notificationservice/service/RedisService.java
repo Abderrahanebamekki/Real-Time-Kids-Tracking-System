@@ -70,22 +70,7 @@ public class RedisService {
                 .get("ch:"+ childId.toString() + ":n");
     }
 
-    public Mono<String> saveNotification(String message , MessageType messageType) {
-        String key = UUID.randomUUID().toString();
-        NotificationEvent notificationDto = NotificationEvent.builder()
-                .message(message)
-                .dateTime(LocalDateTime.now())
-                .type(messageType)
-                .build();
-        return redisTemplateNotification.opsForValue()
-                .set(key, notificationDto)
-                .thenReturn(key);
-    }
 
-    public Mono<NotificationEvent> getNotification(String messageId) {
-        return redisTemplateNotification.opsForValue()
-                .get(messageId);
-    }
     private String streamKey(String userId) {
         return "notification-stream:" + userId;
     }
