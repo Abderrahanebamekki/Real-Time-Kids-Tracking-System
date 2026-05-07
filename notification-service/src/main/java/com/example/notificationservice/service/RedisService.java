@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Range;
 import org.springframework.data.redis.connection.ReactiveSubscription;
+import org.springframework.data.redis.connection.stream.*;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -18,10 +19,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -85,5 +86,43 @@ public class RedisService {
         return redisTemplateNotification.opsForValue()
                 .get(messageId);
     }
+    private String streamKey(String userId) {
+        return "notification-stream:" + userId;
+    }
 
+    public Mono<Void> publish(String userId , String message , MessageType messageType){
+        NotificationEvent event = NotificationEvent.builder()
+                .message(message)
+                .dateTime(LocalDateTime.now())
+                .type(messageType)
+                .build();
+        String streamKey = streamKey(userId);
+        Map<String, NotificationEvent> body = Map.of("data", event);
+        return redisTemplateNotification.opsForStream()
+                .add(StreamRecords.mapBacked(body).withStreamKey(streamKey))
+                .flatMap(recordId ->
+                        redisTemplateNotification.expire(streamKey , Duration.ofDays(7))
+                )
+                .then();
+    }
+
+    public Flux<NotificationEvent> subscribe(String userId) {
+        String streamKey = streamKey(userId);
+        AtomicReference<String> lastId = new AtomicReference<>("0");
+
+        return Flux.interval(Duration.ofSeconds(2))
+                .flatMap(tick->
+                    redisTemplateNotification.opsForStream()
+                            .read(
+                                    NotificationEvent.class,
+                                    StreamReadOptions.empty().count(10),
+                                    StreamOffset.create(streamKey,ReadOffset.from(lastId.get()))
+                            )
+                            .flatMap(record->
+                                  redisTemplateNotification.opsForStream()
+                                          .delete(streamKey , record.getId())
+                                          .thenReturn(record.getValue())
+                            )
+                )
+    }
 }
