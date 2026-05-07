@@ -63,17 +63,19 @@ public class KafkaConsumerService {
     private Mono<Void> handleChildInSafeZone(String childId, String currentSafeZoneName) {
 
         return redisService.getLastSafeZone(childId)
+                .switchIfEmpty(saveSafeZoneAndPublish(childId, currentSafeZoneName))
                 .flatMap(lastSafeZone -> {
-                    if (!currentSafeZoneName.equals(lastSafeZone.nameOfLastZone()) || !lastSafeZone.isInside()) {
+                    if (!currentSafeZoneName.equals(lastSafeZone.nameOfLastZone())
+                            || !lastSafeZone.isInside()) {
+
                         return updateSafeZoneAndPublish(childId, currentSafeZoneName);
                     }
 
-                    return Mono.empty();
+                    return Mono.<Void>empty();
                 })
-                .switchIfEmpty(updateSafeZoneAndPublish(childId , currentSafeZoneName))
+
                 .then();
     }
-
     private Mono<Void> handleChildOutsideSafeZone(String childId) {
         return redisService.getLastSafeZone(childId)
                 .flatMap(lastSafeZone -> {
@@ -92,6 +94,16 @@ public class KafkaConsumerService {
 
         return redisService.saveLastSafeZone(childId, newSafeZone)
                 .then(publishSafeZoneEvent(childId, safeZoneName, "ENTERED"));
+    }
+    private Mono<LastSafeZone> saveSafeZoneAndPublish(String childId, String safeZoneName) {
+        LastSafeZone newSafeZone = LastSafeZone.builder()
+                .nameOfLastZone(safeZoneName)
+                .isInside(true)
+                .build();
+
+        return redisService.saveLastSafeZone(childId, newSafeZone)
+                .then(publishSafeZoneEvent(childId, safeZoneName, "ENTERED"))
+                .thenReturn(newSafeZone);
     }
 
     private Mono<Void> clearSafeZoneAndPublish(String childId, String previousZoneName) {
@@ -127,5 +139,9 @@ public class KafkaConsumerService {
                 .childId(Long.parseLong(childId))
                 .build();
         return rabbitMqService.sendSpeedAlert(event);
+    }
+
+    private Mono<Void> emptyMono(){
+        return Mono.empty();
     }
 }
