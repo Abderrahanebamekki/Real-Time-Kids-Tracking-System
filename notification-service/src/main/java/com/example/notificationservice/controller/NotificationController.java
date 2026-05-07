@@ -1,8 +1,6 @@
 package com.example.notificationservice.controller;
 
 import com.example.notificationservice.dto.NotificationEvent;
-import com.example.notificationservice.service.NotificationService;
-import com.example.notificationservice.service.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
