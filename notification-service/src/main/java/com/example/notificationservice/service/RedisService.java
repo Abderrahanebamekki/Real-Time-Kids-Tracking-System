@@ -106,23 +106,26 @@ public class RedisService {
                 .then();
     }
 
-    public Flux<NotificationEvent> subscribe(String userId) {
-        String streamKey = streamKey(userId);
+    public Flux<NotificationEvent> subscribe(String parentId) {
+        String streamKey = streamKey(parentId);
         AtomicReference<String> lastId = new AtomicReference<>("0");
 
         return Flux.interval(Duration.ofSeconds(2))
-                .flatMap(tick->
-                    redisTemplateNotification.opsForStream()
-                            .read(
-                                    NotificationEvent.class,
-                                    StreamReadOptions.empty().count(10),
-                                    StreamOffset.create(streamKey,ReadOffset.from(lastId.get()))
-                            )
-                            .flatMap(record->
-                                  redisTemplateNotification.opsForStream()
-                                          .delete(streamKey , record.getId())
-                                          .thenReturn(record.getValue())
-                            )
-                )
+                .flatMap(tick ->
+                        redisTemplateNotification.opsForStream()
+                                .read(
+                                        NotificationEvent.class,
+                                        StreamReadOptions.empty().count(10),
+                                        StreamOffset.create(streamKey, ReadOffset.from(lastId.get()))
+                                )
+                                .flatMap(record ->
+                                        redisTemplateNotification.opsForStream()
+                                                .delete(streamKey, record.getId())
+                                                .doOnSuccess(deleted ->
+                                                        lastId.set(record.getId().getValue())
+                                                )
+                                                .thenReturn(record.getValue())
+                                )
+                );
     }
 }

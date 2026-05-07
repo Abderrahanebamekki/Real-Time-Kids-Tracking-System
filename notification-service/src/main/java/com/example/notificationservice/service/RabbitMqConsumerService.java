@@ -24,18 +24,15 @@ public class RabbitMqConsumerService {
 
     @RabbitListener(queues = "${app.rabbitmq.queues.speed}")
     public void consumeSpeedAlert(SpeedEvent event) {
-        log.info("event {}", event.speed());
         getChildName(event.childId())
-                .flatMap(childName ->
-                        redisService.saveNotification(
-                                childName + " has abnormal speed " + event.speed(),
-                                MessageType.ALERT
-                        )
-                )
-                .flatMapMany(messageId ->
+                .flatMapMany(childName ->
                         getUsersId(event.childId())
                                 .flatMap(parentId ->
-                                        redisService.saveNotificationForParent(parentId, messageId)
+                                        redisService.publish(
+                                                parentId.toString(),
+                                                childName + "has abnorml speed " + event.speed(),
+                                                MessageType.ALERT
+                                                )
                                 )
                 )
                 .then()
@@ -47,16 +44,14 @@ public class RabbitMqConsumerService {
     public void consumeSafeZoneAlert(SafeZoneEvent event) {
         log.info("message {}" , event.safezoneName());
         getChildName(event.childId())
-                .flatMap(childName ->
-                        redisService.saveNotification(
-                                childName + " is " + event.eventType() + " for " + event.safezoneName(),
-                                MessageType.INFO
-                        )
-                )
-                .flatMapMany(messageId ->
+                .flatMapMany(childName ->
                         getUsersId(event.childId())
                                 .flatMap(parentId ->
-                                        redisService.saveNotificationForParent(parentId, messageId)
+                                        redisService.publish(
+                                                parentId.toString(),
+                                                childName + " is " + event.eventType() + " for " + event.safezoneName(),
+                                                MessageType.INFO
+                                        )
                                 )
                 )
                 .then()
