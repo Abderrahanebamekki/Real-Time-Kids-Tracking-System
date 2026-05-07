@@ -33,6 +33,11 @@ spring:
               uri: lb://GEOFENCING-SERVICE
               predicates:
                 - Path=/safezones/**
+
+            - id: notification-service
+              uri: lb://NOTIFICATION-SERVICE
+              predicates:
+                - Path=/notifications/**
   mail:
     host: smtp.gmail.com
     port: 587

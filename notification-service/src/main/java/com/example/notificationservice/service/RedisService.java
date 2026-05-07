@@ -5,6 +5,7 @@ import com.example.notificationservice.dto.NotificationEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Range;
 import org.springframework.data.redis.connection.ReactiveSubscription;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
@@ -23,6 +24,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RedisService {
@@ -37,7 +39,7 @@ public class RedisService {
 
     public Mono<Void> saveUserSIdForChild(Long childId, List<Long> userId) {
         String key = "ch:" + childId+":ps";
-
+       log.info("Saving user ids for child: {} , user ids: {}", childId, userId);
         Set<ZSetOperations.TypedTuple<String>> tuples = userId.stream()
                 .map(id -> ZSetOperations.TypedTuple.of(
                         String.valueOf(id),
@@ -79,14 +81,21 @@ public class RedisService {
                 .thenReturn(key);
     }
 
+    public Mono<NotificationEvent> getNotification(String messageId) {
+        return redisTemplateNotification.opsForValue()
+                .get(messageId);
+    }
+
     public Mono<Void> saveNotificationForParent(Long userId , String messageId){
+        log.info("Saving notification for parent: {} , message id: {}", userId, messageId);
         String key = "p:" + userId + ":n";
         return stringRedisTemplate.opsForZSet()
                 .add(key , messageId , LocalDateTime.now().toEpochSecond(java.time.ZoneOffset.UTC))
                 .then();
     }
 
-    public Flux<String> getNotificationForParent(String key) {
+    public Flux<String> getNotificationForParent(String userId) {
+        String key = "p:" + userId + ":n";
         return stringRedisTemplate.opsForZSet()
                 .range(key, Range.unbounded())
                 .publishOn(Schedulers.boundedElastic())
@@ -96,24 +105,24 @@ public class RedisService {
                 );
     }
 
-    public Mono<Long> publish(String userId, NotificationEvent message) {
-        String channel = "notification:" + userId;
-        return redisTemplateNotification.convertAndSend(channel, message);
-    }
-
-    public Flux<NotificationEvent> subscribe(String userId) {
-        String channel = "notification:" + userId;
-        return listenerContainer
-                .receive(ChannelTopic.of(channel))
-                .map(message -> {
-                    try {
-                        return objectMapper.readValue(
-                                message.getMessage(), NotificationEvent.class
-                        );
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException("Failed to deserialize message", e);
-                    }
-                });
-    }
+//    public Mono<Long> publish(String userId, NotificationEvent message) {
+//        String channel = "notification:" + userId;
+//        return redisTemplateNotification.convertAndSend(channel, message);
+//    }
+//
+//    public Flux<NotificationEvent> subscribe(String userId) {
+//        String channel = "notification:" + userId;
+//        return listenerContainer
+//                .receive(ChannelTopic.of(channel))
+//                .handle((message, sink) -> {
+//                    try {
+//                        sink.next(objectMapper.readValue(
+//                                message.getMessage(), NotificationEvent.class
+//                        ));
+//                    } catch (JsonProcessingException e) {
+//                        sink.error(new RuntimeException("Failed to deserialize message", e));
+//                    }
+//                });
+//    }
 
 }

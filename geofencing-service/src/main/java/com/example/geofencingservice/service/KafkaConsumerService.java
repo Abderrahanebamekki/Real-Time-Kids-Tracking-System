@@ -70,6 +70,7 @@ public class KafkaConsumerService {
 
                     return Mono.empty();
                 })
+                .switchIfEmpty(updateSafeZoneAndPublish(childId , currentSafeZoneName))
                 .then();
     }
 
@@ -99,6 +100,7 @@ public class KafkaConsumerService {
     }
 
     private Mono<Void> publishSafeZoneEvent(String childId, String safeZoneName, String eventType) {
+        log.info("Publishing safe zone event: Child ID: {}, Safe Zone Name: {}, Event Type: {}", childId, safeZoneName, eventType);
         SafeZoneEvent event = SafeZoneEvent.builder()
                 .childId(Long.parseLong(childId))
                 .eventType(eventType)

@@ -10,6 +10,7 @@ import io.grpc.stub.StreamObserver;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -30,16 +31,16 @@ public class grpcClient {
         this.asyncStub = IdentityFamilyServiceGrpc.newStub(channel);
     }
 
-    public Mono<List<Long>> getUsersId(Long childId) {
-        return Mono.create(sink -> {
+    public Flux<Long> getUsersId(Long childId) {
+        return Flux.create(sink -> {
             ChildRequest request = ChildRequest.newBuilder()
                     .setChildId(childId)
                     .build();
 
-            asyncStub.getUsersIdByChild(request, new StreamObserver<>() {
+            asyncStub.getUsersIdByChild(request, new StreamObserver<UserResponse>() {
                 @Override
                 public void onNext(UserResponse value) {
-                    sink.success(value.getUsersList());
+                    value.getUsersList().forEach(sink::next);
                 }
 
                 @Override
@@ -49,12 +50,11 @@ public class grpcClient {
 
                 @Override
                 public void onCompleted() {
-                    // nothing
+                    sink.complete();
                 }
             });
         });
     }
-
     public Mono<String> getChildName(Long childId) {
         return Mono.create(sink -> {
             ChildRequest request = ChildRequest.newBuilder()
