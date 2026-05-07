@@ -20,18 +20,9 @@ public class NotificationController {
     private final RedisService redisService;
 
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<ServerSentEvent<NotificationEvent>> subscribe(
+    public Flux<NotificationEvent> subscribe(
             @RequestHeader("X-User-Id") String parentId
     ) {
-        return redisService.subscribe(parentId)
-                .map(event -> ServerSentEvent.<NotificationEvent>builder()
-                        .id(String.valueOf(System.currentTimeMillis()))
-                        .event(event.type().name())
-                        .data(event)
-                        .build()
-                )
-                .doOnSubscribe(s -> log.info("Parent connected: {}", parentId))
-                .doOnCancel(() -> log.info("Parent disconnected: {}", parentId))
-                .doOnError(e -> log.error("SSE error for {}: {}", parentId, e.getMessage()));
+        return redisService.subscribe(parentId);
     }
 }
