@@ -30,10 +30,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RedisService {
 
-    private final ReactiveRedisTemplate<String , NotificationEvent> redisTemplateNotification;
-    private final ReactiveStringRedisTemplate stringRedisTemplate;
-    private final ReactiveRedisMessageListenerContainer listenerContainer;
-    private final ObjectMapper objectMapper;
+   private final ReactiveStringRedisTemplate stringRedisTemplate;
+   private final ObjectMapper objectMapper;
 
 
 
@@ -75,20 +73,26 @@ public class RedisService {
         return "notification-stream:" + userId;
     }
 
-    public Mono<Void> publish(String userId , String message , MessageType messageType){
-        NotificationEvent event = NotificationEvent.builder()
-                .message(message)
-                .dateTime(LocalDateTime.now())
-                .type(messageType)
-                .build();
+    public Mono<Void> publish(String userId, String message ,  MessageType type) {
         String streamKey = streamKey(userId);
-        Map<String, NotificationEvent> body = Map.of("data", event);
-        return redisTemplateNotification.opsForStream()
-                .add(StreamRecords.mapBacked(body).withStreamKey(streamKey))
-                .flatMap(recordId ->
-                        redisTemplateNotification.expire(streamKey , Duration.ofDays(7))
-                )
-                .then();
+
+        NotificationEvent  event = NotificationEvent.builder()
+                .dateTime(LocalDateTime.now())
+                .message(message)
+                .type(type)
+                .build();
+
+        try {
+            String json = objectMapper.writeValueAsString(event);
+
+            Map<String, String> body = Map.of("data", json);
+
+            return stringRedisTemplate.opsForStream()
+                    .add(StreamRecords.mapBacked(body).withStreamKey(streamKey))
+                    .then();
+        } catch (JsonProcessingException e) {
+            return Mono.error(new RuntimeException("Failed to serialize", e));
+        }
     }
 
     public Flux<NotificationEvent> subscribe(String parentId) {
@@ -97,20 +101,29 @@ public class RedisService {
 
         return Flux.interval(Duration.ofSeconds(2))
                 .flatMap(tick ->
-                        redisTemplateNotification.opsForStream()
+                        stringRedisTemplate.opsForStream()
                                 .read(
-                                        NotificationEvent.class,
                                         StreamReadOptions.empty().count(10),
                                         StreamOffset.create(streamKey, ReadOffset.from(lastId.get()))
                                 )
-                                .flatMap(record ->
-                                        redisTemplateNotification.opsForStream()
-                                                .delete(streamKey, record.getId())
-                                                .doOnSuccess(deleted ->
-                                                        lastId.set(record.getId().getValue())
-                                                )
-                                                .thenReturn(record.getValue())
-                                )
-                );
+                                .flatMap(record -> {
+                                    String json = (String) record.getValue().get("data"); // ✅ get String
+                                    return stringRedisTemplate.opsForStream()
+                                            .delete(streamKey, record.getId())
+                                            .doOnSuccess(d ->
+                                                    lastId.set(record.getId().getValue())
+                                            )
+                                            .thenReturn(json);
+                                })
+                                .map(json -> {
+                                    try {
+                                        return objectMapper.readValue(json, NotificationEvent.class); // ✅ deserialize
+                                    } catch (JsonProcessingException e) {
+                                        throw new RuntimeException("Failed to deserialize", e);
+                                    }
+                                })
+                )
+                .doOnSubscribe(s -> log.info("Subscribed to stream {}", streamKey))
+                .doOnCancel(() -> log.info("Unsubscribed from stream {}", streamKey));
     }
 }
