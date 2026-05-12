@@ -13,6 +13,9 @@ import com.example.identityfamily.core.domain.permission.PermissionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ChildServiceImpl implements ChildService {
@@ -81,6 +84,19 @@ public class ChildServiceImpl implements ChildService {
     @Override
     public String getChildName(Long child_id) {
         return childRepository.getChildName(child_id);
+    }
+
+    @Override
+    public List<ChildDto> getAllChildForParent(Long userId) {
+        ParentEntity parent = parentRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Parent not found"));
+        List<ChildDto> children = new ArrayList<>();
+        List<ParentChildEntity> parentChildEntities = parentChildRepository.findByParentId(parent.getId());
+        parentChildEntities.forEach(parentChildEntity -> {
+            ChildEntity child = parentChildEntity.getChild();
+            assert child != null;
+            children.add(ChildMapper.mapToDto(child));
+        });
+        return children;
     }
 
 

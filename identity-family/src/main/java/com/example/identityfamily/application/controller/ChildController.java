@@ -26,6 +26,11 @@ public class ChildController {
         return ResponseEntity.status(HttpStatus.CREATED).body(child);
     }
 
+    @PostMapping("/")
+    public ResponseEntity<ChildDto> getAllChildForParent(
+            @RequestHeader("X-User-Id") String userId) {
 
+        return ResponseEntity.status(HttpStatus.CREATED).body(child);
+    }
 
 }
