@@ -33,10 +33,9 @@ public interface SafeZoneRepository extends R2dbcRepository<SafeZoneEntity,Long>
     );
 
     @Query("""
-    SELECT 
-        id,
+    SELECT id,
         name,
-        radius_meters,
+        radius_meters As radius,
         ST_Y(center::geometry) AS latitude,
         ST_X(center::geometry) AS longitude
     FROM safezone
