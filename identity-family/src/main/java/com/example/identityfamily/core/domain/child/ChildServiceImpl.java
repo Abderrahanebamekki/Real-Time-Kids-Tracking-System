@@ -87,7 +87,7 @@ public class ChildServiceImpl implements ChildService {
     }
 
     @Override
-    public List<ChildDto> getAllChildForParent(Long userId) {
+    public List<ChildDto> getChildrenForParent(Long userId) {
         ParentEntity parent = parentRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Parent not found"));
         List<ChildDto> children = new ArrayList<>();
         List<ParentChildEntity> parentChildEntities = parentChildRepository.findByParentId(parent.getId());
