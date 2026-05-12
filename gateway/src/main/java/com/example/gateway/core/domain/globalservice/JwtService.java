@@ -19,87 +19,64 @@ public class JwtService {
 
     private final String secretKey = "KGrVIqHDak57oXXtm0P8olLAs+yUuLSsQninbC7o4Sc=";
 
-    private final long jwtExpiration = 7676698;
+    private final long jwtExpiration = 1000L * 60 * 60 * 24 * 90;
 
     public String buildJwt(Map<String, Object> extraClaims, UserDetails userDetails) {
         return Jwts.builder()
-                .claims(extraClaims)                                    // ✅ Changed from setClaims()
-                .subject(userDetails.getUsername())                     // ✅ Changed from setSubject()
-                .issuedAt(new Date(System.currentTimeMillis()))         // ✅ Changed from setIssuedAt()
-                .expiration(new Date(System.currentTimeMillis() + jwtExpiration)) // ✅ Changed from setExpiration()
-                .signWith(getSignInKey(), Jwts.SIG.HS256)              // ✅ SignatureAlgorithm → Jwts.SIG
+                .claims(extraClaims)
+                .subject(userDetails.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(getSignInKey(), Jwts.SIG.HS256)
                 .compact();
     }
 
-    /**
-     * Generate JWT token without extra claims (convenience overload)
-     */
+
     public String buildJwt(UserDetails userDetails) {
         return buildJwt(Map.of(), userDetails);
     }
 
-    /**
-     * Validate token against user details - extracts claims ONCE
-     */
+
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final Claims claims = extractAllClaims(token);
         return userDetails.getUsername().equals(claims.getSubject())
                 && !claims.getExpiration().before(new Date());
     }
 
-    /**
-     * Extract username from token
-     */
+
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    /**
-     * Check if token is expired
-     */
     public boolean isTokenExpired(String token) {
         return extractClaim(token, Claims::getExpiration).before(new Date());
     }
 
-    /**
-     * Extract a specific claim using a resolver function (DRY & flexible)
-     */
+
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         return claimsResolver.apply(extractAllClaims(token));
     }
 
-    // ==================== PRIVATE HELPERS ====================
 
-    /**
-     * Parse and extract all claims from token - central point for JWT parsing
-     * Updated for JJWT 0.12.6 API
-     */
     private Claims extractAllClaims(String token) {
         try {
             return Jwts.parser()
-                    .verifyWith(getSignInKey())      // ✅ Changed from setSigningKey()
+                    .verifyWith(getSignInKey())
                     .build()
-                    .parseSignedClaims(token)         // ✅ Changed from parseClaimsJws()
-                    .getPayload();                    // ✅ Changed from getBody()
+                    .parseSignedClaims(token)
+                    .getPayload();
         } catch (JwtException | IllegalArgumentException e) {
             throw new InvalidJwtException("Invalid or expired JWT token", e);
         }
     }
 
-    /**
-     * Decode and create signing key from base64 secret
-     * Returns SecretKey (compatible with JJWT 0.12+)
-     */
+
     private SecretKey getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        return Keys.hmacShaKeyFor(keyBytes);          // ✅ Returns SecretKey, not Key
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // ==================== CUSTOM EXCEPTION ====================
 
-    /**
-     * Runtime exception for JWT-related errors - propagates cleanly through reactive streams
-     */
     public static class InvalidJwtException extends RuntimeException {
         public InvalidJwtException(String message, Throwable cause) {
             super(message, cause);
