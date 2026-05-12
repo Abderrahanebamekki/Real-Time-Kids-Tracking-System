@@ -4,8 +4,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.NonNull;
 
 public record GPS(
-        @NonNull Double longitude,
-        @NonNull Double latitude,
-        @NonNull Double speed
+        Double longitude,
+        Double latitude,
+        Double speed
 ) {
 }

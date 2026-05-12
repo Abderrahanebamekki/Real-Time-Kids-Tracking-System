@@ -1,12 +1,16 @@
 package com.example.geofencingservice.service;
 
 
+import com.example.geofencingservice.dto.GPS;
 import com.example.geofencingservice.dto.LastSafeZone;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.connection.ReactiveSubscription;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 
@@ -65,4 +69,26 @@ public class RedisService {
                 })
                 .then();
     }
+
+    public Mono<Long> publish(Long childId, GPS gps) {
+        String channel = "child:" + childId + ":gps";
+
+        return Mono.fromCallable(() -> OBJECT_MAPPER.writeValueAsString(gps))
+                .flatMap(json -> stringRedisTemplate.convertAndSend(channel, json));
+    }
+
+    public Flux<GPS> subscribe(String childId) {
+
+        String channel = "child:" + childId + ":gps";
+
+        return stringRedisTemplate
+                .listenTo(ChannelTopic.of(channel))
+                .map(ReactiveSubscription.Message::getMessage)
+                .flatMap(json ->
+                        Mono.fromCallable(() ->
+                                OBJECT_MAPPER.readValue(json, GPS.class)
+                        )
+                );
+    }
+
 }
