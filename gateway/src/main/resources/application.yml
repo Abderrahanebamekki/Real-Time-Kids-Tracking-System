@@ -32,7 +32,7 @@ spring:
             - id: geofencing-service
               uri: lb://GEOFENCING-SERVICE
               predicates:
-                - Path=/safezones/**
+                - Path=/geofencing/**
 
             - id: notification-service
               uri: lb://NOTIFICATION-SERVICE

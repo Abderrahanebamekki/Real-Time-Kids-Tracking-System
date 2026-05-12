@@ -11,7 +11,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/safezones")
+@RequestMapping("/geofencing/safezones")
 @RequiredArgsConstructor
 public class SafeZoneController {
     private final SafeZoneService safeZoneService;
