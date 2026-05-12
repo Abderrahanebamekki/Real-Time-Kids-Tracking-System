@@ -24,5 +24,6 @@ public interface ParentChildRepository extends JpaRepository<ParentChildEntity, 
 """)
     List<Long> getAllUsersByChildId(Long childId);
 
+    List<ParentChildEntity> findByParentId(Long parentId);
 
 }
