@@ -70,11 +70,12 @@ public class RedisService {
                 .then();
     }
 
-    public Mono<Long> publish(Long childId, GPS gps) {
+    public Mono<Void> publish(String childId, GPS gps) {
         String channel = "child:" + childId + ":gps";
 
         return Mono.fromCallable(() -> OBJECT_MAPPER.writeValueAsString(gps))
-                .flatMap(json -> stringRedisTemplate.convertAndSend(channel, json));
+                .flatMap(json -> stringRedisTemplate.convertAndSend(channel, json))
+                .then();
     }
 
     public Flux<GPS> subscribe(String childId) {

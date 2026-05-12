@@ -1,9 +1,6 @@
 package com.example.geofencingservice.service;
 
-import com.example.geofencingservice.dto.Envelope;
-import com.example.geofencingservice.dto.LastSafeZone;
-import com.example.geofencingservice.dto.SafeZoneEvent;
-import com.example.geofencingservice.dto.SpeedEvent;
+import com.example.geofencingservice.dto.*;
 import com.example.geofencingservice.grpc.DeviceGrpcClient;
 import com.example.geofencingservice.safe_zone.SafeZoneRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,9 +28,14 @@ public class KafkaConsumerService {
         getChildId(event.deviceId())
                 .flatMap(childId -> Mono.when(
                         processLocation(childId, event) ,
-                        processSpeed(childId, event)
+                        processSpeed(childId, event),
+                        processGps(childId , event.payload())
                 ))
                 .subscribe();
+    }
+
+    public Mono<Void> processGps(String childId, GPS gps) {
+        return redisService.publish(childId , gps);
     }
 
 
