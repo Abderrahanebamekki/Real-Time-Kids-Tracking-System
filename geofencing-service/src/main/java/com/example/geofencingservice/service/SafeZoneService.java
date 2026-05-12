@@ -5,6 +5,7 @@ import com.example.geofencingservice.dto.SafeZoneRequest;
 import com.example.geofencingservice.dto.SafeZoneResponse;
 import com.example.geofencingservice.safe_zone.SafeZoneRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.support.LoggingProducerListener;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;

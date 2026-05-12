@@ -7,7 +7,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 
-@Table("safe_zone")
+@Table("safezone")
 @Getter
 @Setter
 @Builder
@@ -27,7 +27,7 @@ public class SafeZoneEntity {
     @Column("latitude")
     private Double latitude;
 
-    @Column("radius_metters")
+    @Column("radius")
     private Double radius;
 
     @Column("child_id")
