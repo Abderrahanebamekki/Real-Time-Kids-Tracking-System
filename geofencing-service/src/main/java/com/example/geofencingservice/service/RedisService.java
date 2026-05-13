@@ -2,6 +2,7 @@ package com.example.geofencingservice.service;
 
 
 import com.example.geofencingservice.dto.GPS;
+import com.example.geofencingservice.dto.GpsSending;
 import com.example.geofencingservice.dto.LastSafeZone;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -70,7 +71,7 @@ public class RedisService {
                 .then();
     }
 
-    public Mono<Void> publish(String childId, GPS gps) {
+    public Mono<Void> publish(String childId, GpsSending gps) {
         String channel = "child:" + childId + ":gps";
 
         return Mono.fromCallable(() -> OBJECT_MAPPER.writeValueAsString(gps))
@@ -78,7 +79,7 @@ public class RedisService {
                 .then();
     }
 
-    public Flux<GPS> subscribe(String childId) {
+    public Flux<GpsSending> subscribe(String childId) {
 
         String channel = "child:" + childId + ":gps";
 
@@ -87,7 +88,7 @@ public class RedisService {
                 .map(ReactiveSubscription.Message::getMessage)
                 .flatMap(json ->
                         Mono.fromCallable(() ->
-                                OBJECT_MAPPER.readValue(json, GPS.class)
+                                OBJECT_MAPPER.readValue(json, GpsSending.class)
                         )
                 );
     }

@@ -9,6 +9,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.Instant;
 import java.util.Optional;
 
 @Service
@@ -29,13 +30,19 @@ public class KafkaConsumerService {
                 .flatMap(childId -> Mono.when(
                         processLocation(childId, event) ,
                         processSpeed(childId, event),
-                        processGps(childId , event.payload())
+                        processGps(childId , event.payload() , event.timestamp())
                 ))
                 .subscribe();
     }
 
-    public Mono<Void> processGps(String childId, GPS gps) {
-        return redisService.publish(childId , gps);
+    public Mono<Void> processGps(String childId, GPS gps , Instant timestamp) {
+        GpsSending gpsSending = GpsSending.builder()
+                .timestamp(timestamp)
+                .speed(gps.speed())
+                .longitude(gps.longitude())
+                .latitude(gps.latitude())
+                .build();
+        return redisService.publish(childId , gpsSending);
     }
 
 
