@@ -30,19 +30,13 @@ public class KafkaConsumerService {
                 .flatMap(childId -> Mono.when(
                         processLocation(childId, event) ,
                         processSpeed(childId, event),
-                        processGps(childId , event.payload() , event.timestamp())
+                        processGps(childId , event.payload())
                 ))
                 .subscribe();
     }
 
-    public Mono<Void> processGps(String childId, GPS gps , Instant timestamp) {
-        GpsSending gpsSending = GpsSending.builder()
-                .timestamp(timestamp)
-                .speed(gps.speed())
-                .longitude(gps.longitude())
-                .latitude(gps.latitude())
-                .build();
-        return redisService.publish(childId , gpsSending);
+    public Mono<Void> processGps(String childId, GPS gps) {
+        return redisService.publish(childId , gps);
     }
 
 

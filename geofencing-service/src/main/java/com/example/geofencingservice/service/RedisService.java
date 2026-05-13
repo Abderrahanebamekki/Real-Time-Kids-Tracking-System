@@ -2,7 +2,6 @@ package com.example.geofencingservice.service;
 
 
 import com.example.geofencingservice.dto.GPS;
-import com.example.geofencingservice.dto.GpsSending;
 import com.example.geofencingservice.dto.LastSafeZone;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -71,7 +70,7 @@ public class RedisService {
                 .then();
     }
 
-    public Mono<Void> publish(String childId, GpsSending gps) {
+    public Mono<Void> publish(String childId, GPS gps) {
         String channel = "child:" + childId + ":gps";
 
         return Mono.fromCallable(() -> OBJECT_MAPPER.writeValueAsString(gps))
@@ -82,18 +81,18 @@ public class RedisService {
                 .then();
     }
 
-    public Flux<GpsSending> subscribe(String childId) {
+    public Flux<GPS> subscribe(String childId) {
 
         String channel = "child:" + childId + ":gps";
 
-        Flux<GpsSending> lastGps = getLastGps(channel).flux();
+        Flux<GPS> lastGps = getLastGps(channel).flux();
 
-        Flux<GpsSending> liveGps = stringRedisTemplate
+        Flux<GPS> liveGps = stringRedisTemplate
                 .listenTo(ChannelTopic.of(channel))
                 .map(ReactiveSubscription.Message::getMessage)
                 .flatMap(json ->
                         Mono.fromCallable(() ->
-                                OBJECT_MAPPER.readValue(json, GpsSending.class)
+                                OBJECT_MAPPER.readValue(json, GPS.class)
                         )
                 );
 
@@ -105,13 +104,13 @@ public class RedisService {
                 .set(key, json);
     }
 
-    private Mono<GpsSending> getLastGps(String key) {
+    private Mono<GPS> getLastGps(String key) {
         return stringRedisTemplate
                 .opsForValue()
                 .get(key)
                 .flatMap(json ->
                         Mono.fromCallable(() ->
-                                OBJECT_MAPPER.readValue(json, GpsSending.class)
+                                OBJECT_MAPPER.readValue(json, GPS.class)
                         )
                 );
     }
