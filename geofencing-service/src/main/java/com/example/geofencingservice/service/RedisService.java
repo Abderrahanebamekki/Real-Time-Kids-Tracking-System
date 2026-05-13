@@ -93,7 +93,7 @@ public class RedisService {
                 .map(ReactiveSubscription.Message::getMessage)
                 .flatMap(json ->
                         Mono.fromCallable(() ->
-                                OBJECT_MAPPER.readValue(json, GPS.class)
+                                OBJECT_MAPPER.readValue(json, GpsSending.class)
                         )
                 );
 

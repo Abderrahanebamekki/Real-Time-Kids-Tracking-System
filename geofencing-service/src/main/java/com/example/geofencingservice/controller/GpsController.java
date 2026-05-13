@@ -2,6 +2,7 @@ package com.example.geofencingservice.controller;
 
 
 import com.example.geofencingservice.dto.GPS;
+import com.example.geofencingservice.dto.GpsSending;
 import com.example.geofencingservice.service.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -17,7 +18,7 @@ import reactor.core.publisher.Flux;
 public class GpsController {
    private final RedisService redisService;
    @GetMapping(value = "/{childId}" , produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-   public Flux<GPS> getGPS(@PathVariable String childId) {
+   public Flux<GpsSending> getGPS(@PathVariable String childId) {
        return redisService.subscribe(childId);
    }
 
