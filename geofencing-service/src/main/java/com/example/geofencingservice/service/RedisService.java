@@ -75,7 +75,10 @@ public class RedisService {
         String channel = "child:" + childId + ":gps";
 
         return Mono.fromCallable(() -> OBJECT_MAPPER.writeValueAsString(gps))
-                .flatMap(json -> stringRedisTemplate.convertAndSend(channel, json))
+                .flatMap(json ->
+                        saveLastGps(channel, json)
+                                .then(stringRedisTemplate.convertAndSend(channel, json))
+                )
                 .then();
     }
 
@@ -83,14 +86,33 @@ public class RedisService {
 
         String channel = "child:" + childId + ":gps";
 
-        return stringRedisTemplate
+        Flux<GpsSending> lastGps = getLastGps(channel).flux();
+
+        Flux<GpsSending> liveGps = stringRedisTemplate
                 .listenTo(ChannelTopic.of(channel))
                 .map(ReactiveSubscription.Message::getMessage)
+                .flatMap(json ->
+                        Mono.fromCallable(() ->
+                                OBJECT_MAPPER.readValue(json, GPS.class)
+                        )
+                );
+
+        return Flux.concat(lastGps, liveGps);
+    }
+    private Mono<Boolean> saveLastGps(String key, String json) {
+        return stringRedisTemplate
+                .opsForValue()
+                .set(key, json);
+    }
+
+    private Mono<GpsSending> getLastGps(String key) {
+        return stringRedisTemplate
+                .opsForValue()
+                .get(key)
                 .flatMap(json ->
                         Mono.fromCallable(() ->
                                 OBJECT_MAPPER.readValue(json, GpsSending.class)
                         )
                 );
     }
-
 }
