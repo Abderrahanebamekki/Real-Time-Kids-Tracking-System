@@ -14,7 +14,7 @@ spring:
 
 app:
   mqtt:
-    url: tcp://10.22.124.253:1883
+    url: ${EMQX_TCP_URL}
     client-id: ingestion-service
 server:
   port: 8087
