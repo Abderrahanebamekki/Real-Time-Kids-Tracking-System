@@ -41,8 +41,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: bamekki.abderrahmane49@gmail.com
-    password: "wyyp bztz bpse rzzw"  # ✅ Quoted because of spaces
+    username: ${EMAIL_USERNAME}
+    password: ${EMAIL_PASSWORD}
     properties:
       mail:
         smtp:
