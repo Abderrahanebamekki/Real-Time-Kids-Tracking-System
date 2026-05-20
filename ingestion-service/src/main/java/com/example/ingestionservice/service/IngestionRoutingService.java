@@ -2,6 +2,7 @@ package com.example.ingestionservice.service;
 
 import com.example.ingestionservice.domain.Envelope;
 import com.example.ingestionservice.domain.GPS;
+import com.example.ingestionservice.domain.VitalEvent;
 import com.example.ingestionservice.exception.TopicNotSupported;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,15 +14,12 @@ import reactor.core.publisher.Mono;
 import java.time.Instant;
 import java.util.UUID;
 
-import static reactor.netty.http.HttpConnectionLiveness.log;
-
 @Service
 public class IngestionRoutingService {
     private final ObjectMapper objectMapper;
-    private final KafkaTemplate<String, Envelope<GPS>> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-
-    public  IngestionRoutingService(KafkaTemplate<String, Envelope<GPS>> kafkaTemplate) {
+    public IngestionRoutingService(KafkaTemplate<String, Object> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
         this.objectMapper = new ObjectMapper();
     }
@@ -42,13 +40,22 @@ public class IngestionRoutingService {
 
     }
 
-    private Mono<Void> publishVitals(String deviceId, JsonNode node) {
-        double latitude = node.get("heartbeats").asDouble();
-        double longitude = node.get("oxygenLevel").asDouble();
-
-        log.info("📍 GPS received from device [{}]: lat={}, lon={}, speed={}, temp={}",
-                deviceId, latitude, longitude);
-        return Mono.empty();
+    private Mono<Void> publishVitals(String deviceId, JsonNode node) throws JsonProcessingException {
+        assert verifyVitalsData(node);
+        VitalEvent vitals = objectMapper.treeToValue(node, VitalEvent.class);
+        Envelope<VitalEvent> envelope = Envelope.<VitalEvent>builder()
+                .eventId(UUID.randomUUID())
+                .payload(vitals)
+                .timestamp(Instant.now())
+                .deviceId(deviceId)
+                .build();
+        return Mono.fromFuture(
+                        kafkaTemplate.send("vitals", deviceId, envelope)
+                                .toCompletableFuture()
+                )
+                .doOnSuccess(v -> System.out.println("Sent vitals for " + deviceId))
+                .doOnError(e -> System.err.println("Kafka error: " + e.getMessage()))
+                .then();
     }
 
     private Mono<Void> publishGps(String deviceId, JsonNode node) throws JsonProcessingException {
@@ -70,6 +77,10 @@ public class IngestionRoutingService {
     }
 
     private Boolean verifyGpsData(JsonNode node) {
+        return true;
+    }
+
+    private Boolean verifyVitalsData(JsonNode node) {
         return true;
     }
 
