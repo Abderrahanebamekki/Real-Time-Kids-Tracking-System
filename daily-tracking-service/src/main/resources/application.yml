@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: daily-tracking-service
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: com.example.dailytrackingservice.dto.Envelope
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/dtracking
+    username: postgres
+    password: 12345678
+    pool:
+      enabled: true
+      max-size: 10
+      initial-size: 5
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+app:
+  kafka:
+    topic:
+     vitals: vitals
+
+server:
+  port: 8089
