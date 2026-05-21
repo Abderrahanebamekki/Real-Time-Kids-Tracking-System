@@ -33,9 +33,6 @@ public class KafkaConsumer {
         vitalsRepository.save(vitals)
                 .then(redisService.publishVitals(childId, vitalEvent))
                 .then(redisService.saveVitalsToRedis(childId, vitalEvent))
-                .then(Mono.fromRunnable(() -> redisService.subscribeToVitalsChannel(childId)))
-                .doOnSuccess(unused -> log.info("Processed vitals for child: {}", childId))
-                .doOnError(error -> log.error("Error processing vitals for child {}: {}", childId, error.getMessage()))
                 .subscribe();
     }
 }
