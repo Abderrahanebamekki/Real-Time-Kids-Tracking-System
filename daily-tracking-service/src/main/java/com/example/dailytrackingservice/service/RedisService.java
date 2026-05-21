@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -21,8 +22,8 @@ public class RedisService {
         return reactiveRedisTemplate.opsForValue().get(deviceId);
     }
 
-    public Mono<Void> publishVitals(String deviceId, VitalEvent vitalEvent) {
-        String channel = buildChannel(deviceId);
+    public Mono<Void> publishVitals(String childId, VitalEvent vitalEvent) {
+        String channel = buildChannel(childId);
         return toJson(vitalEvent)
                 .flatMap(json -> reactiveRedisTemplate.convertAndSend(channel, json))
                 .then();
@@ -35,12 +36,18 @@ public class RedisService {
                 .then();
     }
 
-    public void subscribeToVitalsChannel(String deviceId) {
-        String channel = buildChannel(deviceId);
-        reactiveRedisTemplate.listenToChannel(channel)
-                .doOnNext(message -> log.info("Received message on channel {}: {}", channel, message.getMessage()))
-                .doOnError(error -> log.error("Error on channel {}: {}", channel, error.getMessage()))
-                .subscribe();
+    public Flux<VitalEvent> subscribeToVitals(Long childId) {
+        String channel = buildChannel(childId.toString());
+        return reactiveRedisTemplate.listenToChannel(channel)
+                .map(message -> {
+                    try {
+                        return objectMapper.readValue(message.getMessage(), VitalEvent.class);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .doOnNext(vitalEvent -> log.info("Received vitals on channel {}: {}", channel, vitalEvent))
+                .doOnError(error -> log.error("Error on channel {}: {}", channel, error.getMessage()));
     }
 
     private Mono<String> toJson(VitalEvent event) {
@@ -51,7 +58,7 @@ public class RedisService {
         }
     }
 
-    private String buildChannel(String deviceId) {
-        return "ch:" + deviceId + ":v";
+    private String buildChannel(String childId) {
+        return "ch:" + childId + ":v";
     }
 }
