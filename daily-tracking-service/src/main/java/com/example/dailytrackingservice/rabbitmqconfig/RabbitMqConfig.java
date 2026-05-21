@@ -13,6 +13,7 @@ public class RabbitMqConfig {
     public static final String EXCHANGE = "vitals";
     public static final String ROUTING_HEARTBEAT = "vitals.heartbeat";
     public static final String ROUTING_OXYGEN = "vitals.oxygen";
+    public static final String ROUTING_BATTERY = "vitals.battery";
 
     @Bean
     public TopicExchange vitalsExchange() {
@@ -41,5 +42,17 @@ public class RabbitMqConfig {
         return BindingBuilder.bind(oxygenQueue())
                 .to(vitalsExchange())
                 .with(ROUTING_OXYGEN);
+    }
+
+    @Bean
+    public Queue batteryQueue() {
+        return new Queue("battery-queue");
+    }
+
+    @Bean
+    public Binding batteryBinding() {
+        return BindingBuilder.bind(batteryQueue())
+                .to(vitalsExchange())
+                .with(ROUTING_BATTERY);
     }
 }
