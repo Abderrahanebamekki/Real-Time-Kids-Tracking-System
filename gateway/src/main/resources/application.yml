@@ -38,6 +38,10 @@ spring:
               uri: lb://NOTIFICATION-SERVICE
               predicates:
                 - Path=/notifications/**
+            - id : daily-tracking-service
+              uri: lb://DAILY-TRACKING-SERVICE
+              predicates:
+                - Path=/daily_tracking/**
   mail:
     host: smtp.gmail.com
     port: 587

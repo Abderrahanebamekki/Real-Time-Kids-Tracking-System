@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
 @RestController
-@RequestMapping("/vitals")
+@RequestMapping("/daily_tracking/vitals")
 @RequiredArgsConstructor
 public class VitalsController {
 
