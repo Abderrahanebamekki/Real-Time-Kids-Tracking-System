@@ -1,5 +1,6 @@
 package com.example.dailytrackingservice.service;
 
+import com.example.dailytrackingservice.dto.BatteryEvent;
 import com.example.dailytrackingservice.dto.Envelope;
 import com.example.dailytrackingservice.dto.HeartbeatEvent;
 import com.example.dailytrackingservice.dto.OxygenEvent;
@@ -13,6 +14,8 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -21,6 +24,7 @@ public class KafkaConsumer {
     private static final int HEARTBEAT_MIN = 60;
     private static final int HEARTBEAT_MAX = 100;
     private static final int OXYGEN_MIN = 90;
+    private static final Set<Integer> ABNORMAL_BATTERY_LEVELS = Set.of(20, 15, 10, 5, 2);
 
     private final RedisService redisService;
     private final VitalsRepository vitalsRepository;
@@ -60,6 +64,26 @@ public class KafkaConsumer {
     private void checkAbnormalOxygen(int oxygenLevel, String childId) {
         if (oxygenLevel < OXYGEN_MIN) {
             rabbitMqProducerService.sendAbnormalOxygen(new OxygenEvent(oxygenLevel, childId));
+        }
+    }
+
+    @KafkaListener(topics = "${app.kafka.topic.battery}")
+    public void consumeBattery(Envelope<?> envelope) {
+        String batteryStr = envelope.payload().toString();
+        String childId = envelope.deviceId();
+
+        checkAbnormalBattery(batteryStr, childId);
+        redisService.saveBatteryToRedis(childId, batteryStr).subscribe();
+    }
+
+    private void checkAbnormalBattery(String batteryStr, String childId) {
+        try {
+            int batteryLevel = Integer.parseInt(batteryStr);
+            if (ABNORMAL_BATTERY_LEVELS.contains(batteryLevel)) {
+                rabbitMqProducerService.sendAbnormalBattery(new BatteryEvent(batteryStr, childId));
+            }
+        } catch (NumberFormatException e) {
+            log.warn("Invalid battery level format: {}", batteryStr);
         }
     }
 }
