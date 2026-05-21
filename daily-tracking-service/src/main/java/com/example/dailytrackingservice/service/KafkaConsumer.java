@@ -28,21 +28,24 @@ public class KafkaConsumer {
     @KafkaListener(topics = "${app.kafka.topic.vitals}")
     public void consumeVitals(Envelope<VitalEvent> envelope) {
         VitalEvent vitalEvent = envelope.payload();
-        String childId = envelope.deviceId();
+        String deviceId = envelope.deviceId();
 
-        checkAbnormalHeartbeat(vitalEvent.heartbeats(), childId);
-        checkAbnormalOxygen(vitalEvent.oxygenLevel(), childId);
+        redisService.getChildId(deviceId)
+                .flatMap(childId -> {
+                    checkAbnormalHeartbeat(vitalEvent.heartbeats(), childId);
+                    checkAbnormalOxygen(vitalEvent.oxygenLevel(), childId);
 
-        Vitals vitals = Vitals.builder()
-                .childId(childId)
-                .heartbeats(vitalEvent.heartbeats())
-                .oxygenLevel(vitalEvent.oxygenLevel())
-                .timestamp(envelope.timestamp())
-                .build();
+                    Vitals vitals = Vitals.builder()
+                            .childId(childId)
+                            .heartbeats(vitalEvent.heartbeats())
+                            .oxygenLevel(vitalEvent.oxygenLevel())
+                            .timestamp(envelope.timestamp())
+                            .build();
 
-        vitalsRepository.save(vitals)
-                .then(redisService.publishVitals(childId, vitalEvent))
-                .then(redisService.saveVitalsToRedis(childId, vitalEvent))
+                    return vitalsRepository.save(vitals)
+                            .then(redisService.publishVitals(childId, vitalEvent))
+                            .then(redisService.saveVitalsToRedis(childId, vitalEvent));
+                })
                 .subscribe();
     }
 
