@@ -6,6 +6,7 @@ import com.example.dailytrackingservice.dto.OxygenEvent;
 import com.example.dailytrackingservice.dto.VitalEvent;
 import com.example.dailytrackingservice.entities.Vitals;
 import com.example.dailytrackingservice.repositories.VitalsRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -24,10 +25,11 @@ public class KafkaConsumer {
     private final RedisService redisService;
     private final VitalsRepository vitalsRepository;
     private final RabbitMqProducerService rabbitMqProducerService;
+    private final ObjectMapper objectMapper;
 
     @KafkaListener(topics = "${app.kafka.topic.vitals}")
-    public void consumeVitals(Envelope<VitalEvent> envelope) {
-        VitalEvent vitalEvent = envelope.payload();
+    public void consumeVitals(Envelope<?> envelope) {
+        VitalEvent vitalEvent = objectMapper.convertValue(envelope.payload(), VitalEvent.class);
         String deviceId = envelope.deviceId();
 
         redisService.getChildId(deviceId)
