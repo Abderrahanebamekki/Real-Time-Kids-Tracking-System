@@ -50,6 +50,16 @@ public class RedisService {
                 .doOnError(error -> log.error("Error on channel {}: {}", channel, error.getMessage()));
     }
 
+    public Mono<Void> saveBatteryToRedis(String childId, String batteryLevel) {
+        String key = "ch:" + childId + ":b";
+        return reactiveRedisTemplate.opsForValue().set(key, batteryLevel).then();
+    }
+
+    public Mono<String> getBattery(String childId) {
+        String key = "ch:" + childId + ":b";
+        return reactiveRedisTemplate.opsForValue().get(key);
+    }
+
     private Mono<String> toJson(VitalEvent event) {
         try {
             return Mono.just(objectMapper.writeValueAsString(event));
