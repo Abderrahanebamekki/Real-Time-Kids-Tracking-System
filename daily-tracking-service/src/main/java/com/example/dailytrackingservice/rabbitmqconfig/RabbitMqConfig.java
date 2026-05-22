@@ -2,32 +2,38 @@ package com.example.dailytrackingservice.rabbitmqconfig;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitMqConfig {
 
-    public static final String EXCHANGE = "vitals";
+    public static final String EXCHANGE_V = "vitals";
+    public static final String EXCHANGE_B = "device";
     public static final String ROUTING_HEARTBEAT = "vitals.heartbeat";
     public static final String ROUTING_OXYGEN = "vitals.oxygen";
-    public static final String ROUTING_BATTERY = "vitals.battery";
+    public static final String ROUTING_BATTERY = "device.battery";
 
     @Bean
-    public TopicExchange vitalsExchange() {
-        return new TopicExchange(EXCHANGE);
+    public DirectExchange vitalsExchange() {
+        return new DirectExchange(EXCHANGE_V);
+    }
+
+    @Bean
+    public DirectExchange batteryExchange() {
+        return new DirectExchange(EXCHANGE_B);
     }
 
     @Bean
     public Queue heartbeatQueue() {
-        return new Queue("heartbeat-queue");
+        return new Queue("heartbeat.queue");
     }
 
     @Bean
     public Queue oxygenQueue() {
-        return new Queue("oxygen-queue");
+        return new Queue("oxygen.queue");
     }
 
     @Bean
@@ -46,13 +52,13 @@ public class RabbitMqConfig {
 
     @Bean
     public Queue batteryQueue() {
-        return new Queue("battery-queue");
+        return new Queue("battery.queue");
     }
 
     @Bean
     public Binding batteryBinding() {
         return BindingBuilder.bind(batteryQueue())
-                .to(vitalsExchange())
+                .to(batteryExchange())
                 .with(ROUTING_BATTERY);
     }
 }
