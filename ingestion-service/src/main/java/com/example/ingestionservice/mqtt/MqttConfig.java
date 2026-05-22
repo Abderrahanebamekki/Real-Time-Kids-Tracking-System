@@ -43,7 +43,8 @@ public class MqttConfig {
                         clientId,
                         mqttClientFactory,
                         "devices/+/gps",
-                        "devices/+/vitals"
+                        "devices/+/vitals",
+                        "devices/+/battery"
                 );
         adapter.setCompletionTimeout(5000);
         adapter.setQos(1);

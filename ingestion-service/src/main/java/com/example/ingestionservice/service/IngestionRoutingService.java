@@ -1,5 +1,6 @@
 package com.example.ingestionservice.service;
 
+import com.example.ingestionservice.domain.BatteryEvent;
 import com.example.ingestionservice.domain.Envelope;
 import com.example.ingestionservice.domain.GPS;
 import com.example.ingestionservice.domain.VitalEvent;
@@ -35,6 +36,7 @@ public class IngestionRoutingService {
             return switch (metric) {
                 case "gps" -> publishGps(deviceId, node);
                 case "vitals" -> publishVitals(deviceId, node);
+                case "battery" -> publishBattery(deviceId, node);
                 default -> throw new TopicNotSupported(metric);
             };
 
@@ -81,6 +83,28 @@ public class IngestionRoutingService {
     }
 
     private Boolean verifyVitalsData(JsonNode node) {
+        return true;
+    }
+
+    private Mono<Void> publishBattery(String deviceId, JsonNode node) throws JsonProcessingException {
+        assert verifyBatteryData(node);
+        BatteryEvent battery = objectMapper.treeToValue(node, BatteryEvent.class);
+        Envelope<BatteryEvent> envelope = Envelope.<BatteryEvent>builder()
+                .eventId(UUID.randomUUID())
+                .payload(battery)
+                .timestamp(Instant.now())
+                .deviceId(deviceId)
+                .build();
+        return Mono.fromFuture(
+                        kafkaTemplate.send("battery", deviceId, envelope)
+                                .toCompletableFuture()
+                )
+                .doOnSuccess(v -> System.out.println("Sent battery for " + deviceId))
+                .doOnError(e -> System.err.println("Kafka error: " + e.getMessage()))
+                .then();
+    }
+
+    private Boolean verifyBatteryData(JsonNode node) {
         return true;
     }
 
