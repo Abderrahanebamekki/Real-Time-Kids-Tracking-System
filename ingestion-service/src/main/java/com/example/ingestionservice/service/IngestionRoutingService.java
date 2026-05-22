@@ -1,6 +1,5 @@
 package com.example.ingestionservice.service;
 
-import com.example.ingestionservice.domain.BatteryEvent;
 import com.example.ingestionservice.domain.Envelope;
 import com.example.ingestionservice.domain.GPS;
 import com.example.ingestionservice.domain.VitalEvent;
@@ -31,12 +30,15 @@ public class IngestionRoutingService {
             String deviceId = parts[1];
             String metric = parts[2];
 
+            if ("battery".equals(metric)) {
+                return publishBattery(deviceId, rawPayload);
+            }
+
             JsonNode node = objectMapper.readTree(rawPayload);
 
             return switch (metric) {
                 case "gps" -> publishGps(deviceId, node);
                 case "vitals" -> publishVitals(deviceId, node);
-                case "battery" -> publishBattery(deviceId, node);
                 default -> throw new TopicNotSupported(metric);
             };
 
@@ -86,12 +88,10 @@ public class IngestionRoutingService {
         return true;
     }
 
-    private Mono<Void> publishBattery(String deviceId, JsonNode node) throws JsonProcessingException {
-        assert verifyBatteryData(node);
-        BatteryEvent battery = objectMapper.treeToValue(node, BatteryEvent.class);
-        Envelope<BatteryEvent> envelope = Envelope.<BatteryEvent>builder()
+    private Mono<Void> publishBattery(String deviceId, String batteryLevel) {
+        Envelope<String> envelope = Envelope.<String>builder()
                 .eventId(UUID.randomUUID())
-                .payload(battery)
+                .payload(batteryLevel)
                 .timestamp(Instant.now())
                 .deviceId(deviceId)
                 .build();
@@ -102,10 +102,6 @@ public class IngestionRoutingService {
                 .doOnSuccess(v -> System.out.println("Sent battery for " + deviceId))
                 .doOnError(e -> System.err.println("Kafka error: " + e.getMessage()))
                 .then();
-    }
-
-    private Boolean verifyBatteryData(JsonNode node) {
-        return true;
     }
 
 }
