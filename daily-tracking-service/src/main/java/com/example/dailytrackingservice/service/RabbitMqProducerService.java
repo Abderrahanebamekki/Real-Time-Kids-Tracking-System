@@ -17,17 +17,17 @@ public class RabbitMqProducerService {
     private final RabbitTemplate rabbitTemplate;
 
     public void sendAbnormalHeartbeat(HeartbeatEvent event) {
-        rabbitTemplate.convertAndSend(RabbitMqConfig.EXCHANGE, RabbitMqConfig.ROUTING_HEARTBEAT, event);
+        rabbitTemplate.convertAndSend(RabbitMqConfig.EXCHANGE_V, RabbitMqConfig.ROUTING_HEARTBEAT, event);
         log.info("Sent abnormal heartbeat event: {}", event);
     }
 
     public void sendAbnormalOxygen(OxygenEvent event) {
-        rabbitTemplate.convertAndSend(RabbitMqConfig.EXCHANGE, RabbitMqConfig.ROUTING_OXYGEN, event);
+        rabbitTemplate.convertAndSend(RabbitMqConfig.EXCHANGE_V, RabbitMqConfig.ROUTING_OXYGEN, event);
         log.info("Sent abnormal oxygen event: {}", event);
     }
 
     public void sendAbnormalBattery(BatteryEvent event) {
-        rabbitTemplate.convertAndSend(RabbitMqConfig.EXCHANGE, RabbitMqConfig.ROUTING_BATTERY, event);
+        rabbitTemplate.convertAndSend(RabbitMqConfig.EXCHANGE_V, RabbitMqConfig.ROUTING_BATTERY, event);
         log.info("Sent abnormal battery event: {}", event);
     }
 }
