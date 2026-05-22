@@ -1,7 +1,9 @@
 package com.example.dailytrackingservice.controller;
 
+import com.example.dailytrackingservice.entities.Vitals;
 import com.example.dailytrackingservice.dto.VitalEvent;
 import com.example.dailytrackingservice.service.RedisService;
+import com.example.dailytrackingservice.service.VitalsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,9 +18,15 @@ import reactor.core.publisher.Flux;
 public class VitalsController {
 
     private final RedisService redisService;
+    private final VitalsService vitalsService;
 
     @GetMapping(value = "/subscribe/{childId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<VitalEvent> subscribeToVitals(@PathVariable Long childId) {
         return redisService.subscribeToVitals(childId);
+    }
+
+    @GetMapping("/{childId}")
+    public Flux<Vitals> getAllVitalsForChildInDay(@PathVariable String childId) {
+        return vitalsService.getVitalsForChildInDay(childId);
     }
 }
