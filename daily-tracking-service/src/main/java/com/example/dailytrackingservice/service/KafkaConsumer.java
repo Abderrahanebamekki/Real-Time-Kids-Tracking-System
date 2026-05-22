@@ -70,7 +70,7 @@ public class KafkaConsumer {
     @KafkaListener(topics = "${app.kafka.topic.battery}")
     public void consumeBattery(Envelope<?> envelope) {
         String batteryStr = envelope.payload().toString();
-        String childId = envelope.deviceId();
+        String childId = redisService.getChildId(envelope.deviceId()).block();
 
         checkAbnormalBattery(batteryStr, childId);
         redisService.saveBatteryToRedis(childId, batteryStr).subscribe();
