@@ -23,4 +23,12 @@ public class KafkaConfig {
                 .replicas(1)
                 .build();
     }
+
+    @Bean
+    public NewTopic batteryTopic() {
+        return TopicBuilder.name("battery")
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
 }

@@ -30,6 +30,10 @@ public class IngestionRoutingService {
             String deviceId = parts[1];
             String metric = parts[2];
 
+            if ("battery".equals(metric)) {
+                return publishBattery(deviceId, rawPayload);
+            }
+
             JsonNode node = objectMapper.readTree(rawPayload);
 
             return switch (metric) {
@@ -82,6 +86,22 @@ public class IngestionRoutingService {
 
     private Boolean verifyVitalsData(JsonNode node) {
         return true;
+    }
+
+    private Mono<Void> publishBattery(String deviceId, String batteryLevel) {
+        Envelope<String> envelope = Envelope.<String>builder()
+                .eventId(UUID.randomUUID())
+                .payload(batteryLevel)
+                .timestamp(Instant.now())
+                .deviceId(deviceId)
+                .build();
+        return Mono.fromFuture(
+                        kafkaTemplate.send("battery", deviceId, envelope)
+                                .toCompletableFuture()
+                )
+                .doOnSuccess(v -> System.out.println("Sent battery for " + deviceId))
+                .doOnError(e -> System.err.println("Kafka error: " + e.getMessage()))
+                .then();
     }
 
 }
