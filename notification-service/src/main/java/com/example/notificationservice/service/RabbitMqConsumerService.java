@@ -1,7 +1,10 @@
 package com.example.notificationservice.service;
 
+import com.example.notificationservice.dto.BatteryEvent;
+import com.example.notificationservice.dto.HeartbeatEvent;
 import com.example.notificationservice.dto.MessageType;
 import com.example.notificationservice.dto.NotificationEvent;
+import com.example.notificationservice.dto.OxygenEvent;
 import com.example.notificationservice.dto.SafeZoneEvent;
 import com.example.notificationservice.dto.SpeedEvent;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +59,63 @@ public class RabbitMqConsumerService {
                 )
                 .then()
                 .doOnError(error -> log.error("Error consuming speed alert", error))
+                .subscribe();
+    }
+
+    @RabbitListener(queues = "${app.rabbitmq.queues.heartbeat}")
+    public void consumeHeartbeatAlert(HeartbeatEvent event) {
+        log.info("Received abnormal heartbeat event: {}", event);
+        getChildName(Long.valueOf(event.childId()))
+                .flatMapMany(childName ->
+                        getUsersId(Long.valueOf(event.childId()))
+                                .flatMap(parentId ->
+                                        redisService.publish(
+                                                parentId.toString(),
+                                                childName + " has abnormal heartbeat: " + event.heartbeats() + " bpm",
+                                                MessageType.ALERT
+                                        )
+                                )
+                )
+                .then()
+                .doOnError(error -> log.error("Error consuming heartbeat alert", error))
+                .subscribe();
+    }
+
+    @RabbitListener(queues = "${app.rabbitmq.queues.oxygen}")
+    public void consumeOxygenAlert(OxygenEvent event) {
+        log.info("Received abnormal oxygen event: {}", event);
+        getChildName(Long.valueOf(event.childId()))
+                .flatMapMany(childName ->
+                        getUsersId(Long.valueOf(event.childId()))
+                                .flatMap(parentId ->
+                                        redisService.publish(
+                                                parentId.toString(),
+                                                childName + " has low oxygen level: " + event.oxygenLevel() + "%",
+                                                MessageType.ALERT
+                                        )
+                                )
+                )
+                .then()
+                .doOnError(error -> log.error("Error consuming oxygen alert", error))
+                .subscribe();
+    }
+
+    @RabbitListener(queues = "${app.rabbitmq.queues.battery}")
+    public void consumeBatteryAlert(BatteryEvent event) {
+        log.info("Received abnormal battery event: {}", event);
+        getChildName(Long.valueOf(event.childId()))
+                .flatMapMany(childName ->
+                        getUsersId(Long.valueOf(event.childId()))
+                                .flatMap(parentId ->
+                                        redisService.publish(
+                                                parentId.toString(),
+                                                childName + " has low battery: " + event.batteryLevel() + "%",
+                                                MessageType.ALERT
+                                        )
+                                )
+                )
+                .then()
+                .doOnError(error -> log.error("Error consuming battery alert", error))
                 .subscribe();
     }
 

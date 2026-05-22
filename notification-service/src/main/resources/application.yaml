@@ -17,5 +17,8 @@ app:
     queues:
       speed: speed.queue
       safezone: safezone.queue
+      heartbeat: heartbeat-queue
+      oxygen: oxygen-queue
+      battery: battery-queue
 server:
   port: 8088
