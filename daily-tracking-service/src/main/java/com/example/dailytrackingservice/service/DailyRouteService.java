@@ -25,46 +25,48 @@ import java.util.stream.Collectors;
 public class DailyRouteService {
 
     private final GpsLogRepository gpsLogRepository;
-    private final DailyRouteRepository dailyRouteRepository;
-    private final ObjectMapper objectMapper;
 
-    @Scheduled(cron = "0 30 17 * * *")
-    public void processDailyRoutes() {
-        LocalDate today = LocalDate.now(ZoneOffset.UTC);
-        Instant startOfDay = today.atStartOfDay(ZoneOffset.UTC).toInstant();
-        Instant endOfDay = today.atTime(LocalTime.MAX).atZone(ZoneOffset.UTC).toInstant();
+//    @Scheduled(cron = "0 17 17 * * *")
+//    public void processDailyRoutes() {
+//        log.info("hiwkqe;${r}");
+//        LocalDate today = LocalDate.now(ZoneOffset.UTC);
+//        Instant startOfDay = today.atStartOfDay(ZoneOffset.UTC).toInstant();
+//        Instant endOfDay = today.atTime(LocalTime.MAX).atZone(ZoneOffset.UTC).toInstant();
+//
+//        gpsLogRepository.findByTimestampBetween(startOfDay, endOfDay)
+//                .collectList()
+//                .flatMapMany(points -> {
+//                    Map<String, List<GpsLog>> grouped = points.stream()
+//                            .collect(Collectors.groupingBy(GpsLog::getChildId));
+//                    return Flux.fromIterable(grouped.entrySet());
+//                })
+//                .flatMap(entry -> {
+//                    String childId = entry.getKey();
+//                    List<GPS> routePoints = entry.getValue().stream()
+//                            .map(p -> new GPS(p.getLongitude(), p.getLatitude(), p.getSpeed()))
+//                            .toList();
+//                    try {
+//                        String json = objectMapper.writeValueAsString(routePoints);
+//                        DailyRoute route = DailyRoute.builder()
+//                                .childId(childId)
+//                                .date(today)
+//                                .routePoints(json)
+//                                .build();
+//                        return dailyRouteRepository.save(route);
+//                    } catch (JsonProcessingException e) {
+//                        log.error("Failed to serialize route points for child {}", childId, e);
+//                        return Mono.empty();
+//                    }
+//                })
+//                .doOnComplete(() -> log.info("Daily route processing completed for {}", today))
+//                .doOnError(error -> log.error("Error processing daily routes", error))
+//                .blockLast();
+//    }
 
-        gpsLogRepository.findByChildIdAndTimestampBetween(null, startOfDay, endOfDay)
-                .collectList()
-                .flatMapMany(points -> {
-                    Map<String, List<GpsLog>> grouped = points.stream()
-                            .collect(Collectors.groupingBy(GpsLog::getChildId));
-                    return Flux.fromIterable(grouped.entrySet());
-                })
-                .flatMap(entry -> {
-                    String childId = entry.getKey();
-                    List<GPS> routePoints = entry.getValue().stream()
-                            .map(p -> new GPS(p.getLongitude(), p.getLatitude(), p.getSpeed()))
-                            .toList();
-                    try {
-                        String json = objectMapper.writeValueAsString(routePoints);
-                        DailyRoute route = DailyRoute.builder()
-                                .childId(childId)
-                                .date(today)
-                                .routePoints(json)
-                                .build();
-                        return dailyRouteRepository.save(route);
-                    } catch (JsonProcessingException e) {
-                        log.error("Failed to serialize route points for child {}", childId, e);
-                        return Mono.empty();
-                    }
-                })
-                .doOnComplete(() -> log.info("Daily route processing completed for {}", today))
-                .doOnError(error -> log.error("Error processing daily routes", error))
-                .subscribe();
-    }
-
-    public Mono<DailyRoute> getRouteForChild(String childId, LocalDate date) {
-        return dailyRouteRepository.findByChildIdAndDate(childId, date);
+    public Flux<GpsLog> getRouteForChild(String childId, LocalDate date) {
+        LocalDate targetDate = date != null ? date : LocalDate.now(ZoneOffset.UTC);
+        Instant startOfDay = targetDate.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant endOfDay = targetDate.atTime(LocalTime.MAX).atZone(ZoneOffset.UTC).toInstant();
+        return gpsLogRepository.findByChildIdAndTimestampBetween(childId, startOfDay, endOfDay);
     }
 }
