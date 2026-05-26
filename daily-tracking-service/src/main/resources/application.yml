@@ -33,6 +33,7 @@ app:
     topic:
      vitals: vitals
      battery: battery
+     gps: gps
 
 server:
   port: 8089
