@@ -1,5 +1,17 @@
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:21-jdk AS builder
 WORKDIR /app
-COPY target/*.jar app.jar
+
+COPY .mvn/ .mvn/
+COPY mvnw pom.xml ./
+
+RUN chmod +x mvnw
+RUN ./mvnw dependency:go-offline -B
+
+COPY src/ ./src/
+RUN ./mvnw clean package -DskipTests -B
+
+FROM eclipse-temurin:21-jre AS runner
+WORKDIR /app
+COPY --from=builder /app/target/*.jar app.jar
 EXPOSE 8761
 ENTRYPOINT ["java", "-jar", "app.jar"]
