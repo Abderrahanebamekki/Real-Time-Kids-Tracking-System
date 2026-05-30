@@ -6,9 +6,9 @@ spring:
     name: gateway
 
   r2dbc:
-    url: r2dbc:postgresql://postgres:5432/auth
-    username: postgres
-    password: 12345678
+    url: r2dbc:postgresql://${PGHOST}:${PGPORT}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
     pool:
       enabled: true
       max-size: 10
