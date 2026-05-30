@@ -5,7 +5,7 @@ spring:
   application:
     name: device-gateway
   r2dbc:
-    url: r2dbc:postgresql://localhost:5432/devices
+    url: r2dbc:postgresql://postgres:5432/devices
     username: postgres
     password: 12345678
     pool:
