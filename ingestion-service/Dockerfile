@@ -1,15 +1,19 @@
 FROM maven:3.9-eclipse-temurin-21 AS builder
 WORKDIR /app
 
-COPY .mvn/ .mvn/
-COPY mvnw pom.xml ./
+# Copy ONLY geofencing-service content correctly
+COPY geofencing-service/.mvn/ .mvn/
+COPY geofencing-service/mvnw ./
+COPY geofencing-service/pom.xml ./
+COPY geofencing-service/src/ src/
 
-COPY ./../family-proto/ family-proto/
-COPY ./../device-proto/ device-proto/
+# Copy proto modules (same level as geofencing-service)
+COPY family-proto/ family-proto/
+COPY device-proto/ device-proto/
 
-RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
+RUN chmod +x mvnw
 
-COPY src/ src/
+RUN ./mvnw dependency:go-offline -B
 
 RUN cd family-proto && ../mvnw clean install -DskipTests
 RUN cd device-proto && ../mvnw clean install -DskipTests
