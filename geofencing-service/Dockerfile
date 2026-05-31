@@ -1,11 +1,13 @@
 FROM maven:3.9-eclipse-temurin-21 AS builder
 WORKDIR /app
 
+# Copy geofencing-service correctly
 COPY geofencing-service/.mvn/ .mvn/
 COPY geofencing-service/mvnw ./
 COPY geofencing-service/pom.xml ./
 COPY geofencing-service/src/ src/
 
+# Copy proto modules
 COPY family-proto/ family-proto/
 COPY device-proto/ device-proto/
 
