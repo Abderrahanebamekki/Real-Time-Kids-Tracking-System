@@ -4,6 +4,10 @@ WORKDIR /app
 
 COPY . .
 
+RUN pwd
+RUN ls -la
+RUN find . -name pom.xml
+
 RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21-jre AS runner
 
