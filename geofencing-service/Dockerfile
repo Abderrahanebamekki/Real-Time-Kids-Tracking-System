@@ -9,7 +9,7 @@ WORKDIR /app
 COPY . .
 
 # Build the geofencing service
-RUN mvn clean package -DskipTests -pl geofencing-service -am
+RUN mvn clean package -DskipTests
 
 # ========================
 # Stage 2: Runner
