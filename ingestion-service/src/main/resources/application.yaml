@@ -2,7 +2,7 @@ spring:
   application:
     name: ingestion-service
   kafka:
-    bootstrap-servers: kafka:9092
+    bootstrap-servers: ${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP}
 
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
