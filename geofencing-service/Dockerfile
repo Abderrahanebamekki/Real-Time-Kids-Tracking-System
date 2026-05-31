@@ -6,17 +6,19 @@ FROM eclipse-temurin:21-jdk AS builder
 WORKDIR /app
 
 # Copy Maven wrapper
-COPY geofencing-service/.mvn/ .mvn/
 COPY geofencing-service/mvnw ./
+COPY geofencing-service/.mvn/ .mvn/
 RUN chmod +x mvnw
 
 # Copy proto modules
 COPY family-proto/ family-proto/
 COPY device-proto/ device-proto/
 
-# Copy geofencing service
+# Copy geofencing service pom first (for dependency caching)
 COPY geofencing-service/pom.xml ./
-COPY geofencing-service/src/ src/
+
+# Copy source
+COPY geofencing-service/src ./src
 
 # Install proto modules into local Maven repo
 RUN cd family-proto && ../mvnw install -q && cd ..
