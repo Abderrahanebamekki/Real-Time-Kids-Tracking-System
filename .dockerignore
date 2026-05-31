@@ -1,3 +1,4 @@
-**
-!target/*.jar
-!target/*.jar.original
+target/
+.git/
+.idea/
+*.iml
