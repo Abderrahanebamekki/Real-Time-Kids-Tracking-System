@@ -3,6 +3,6 @@
   "build": {
     "builder": "DOCKERFILE",
     "dockerfilePath": "geofencing-service/Dockerfile",
-    "dockerContextDir": "."
+    "dockerContextDir": "../"
   }
 }
