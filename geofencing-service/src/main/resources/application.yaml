@@ -2,20 +2,26 @@ spring:
   application:
     name: geofencing-service
   rabbitmq:
-    host: rabbitmq
-    port: 5672
-    username: admin
-    password: admin
+    host: ${RABBITMQHOST}
+    port: ${RABBITMQPORT}
+    username: ${RABBITMQUSERNAME}
+    password: ${RABBITMQPASSWORD}
   data:
     redis:
-      host: redis
-      port: 6379
+      host: ${REDISHOST}
+      port: ${REDISPORT}
 
   r2dbc:
-    url: r2dbc:postgresql://postgres:5432/geofencing
+    url: r2dbc:postgresql://${PGHOST}:${PGPORT}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    pool:
+      enabled: true
+      max-size: 10
+      initial-size: 5
 
   kafka:
-    bootstrap-servers: kafka:9092
+    bootstrap-servers: ${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP}
 
     consumer:
       group-id: geofencing-service
