@@ -1,4 +1,5 @@
-FROM eclipse-temurin:21-jdk AS builder
+FROM maven:3.9.11-eclipse-temurin-21 AS builder
+
 WORKDIR /app
 
 COPY family-proto/ family-proto/
@@ -10,9 +11,9 @@ COPY src/ src/
 RUN cd family-proto && mvn install -q && cd ..
 RUN cd device-proto && mvn install -q && cd ..
 
-RUN mvn clean package -DskipTests -q
+RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:21-jre AS runner
+FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
@@ -20,4 +21,4 @@ COPY --from=builder /app/target/*.jar app.jar
 
 EXPOSE 8086
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java","-jar","app.jar"]
