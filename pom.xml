@@ -25,6 +25,7 @@
         <module>family-proto</module>
         <module>device-proto</module>
         <module>identity-family</module>
+        <module>geofencing-service</module>
     </modules>
     <scm>
         <connection/>

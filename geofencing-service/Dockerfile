@@ -1,41 +1,21 @@
-# ========================
-# Stage 1: Builder
-# ========================
-FROM eclipse-temurin:21-jdk AS builder
-
+FROM maven:3.9-eclipse-temurin-21 AS builder
 WORKDIR /app
 
-# Copy Maven wrapper
-COPY geofencing-service/mvnw ./
-COPY geofencing-service/.mvn/ .mvn/
-RUN chmod +x mvnw
+COPY .mvn/ .mvn/
+COPY mvnw pom.xml ./
 
-# Copy proto modules
-COPY family-proto/ family-proto/
-COPY device-proto/ device-proto/
+RUN ./mvnw dependency:go-offline -B
 
-# Copy geofencing service pom first (for dependency caching)
-COPY geofencing-service/pom.xml ./
+COPY src/ ./src/
 
-# Copy source
-COPY geofencing-service/src ./src
+RUN ./mvnw clean package -DskipTests
 
-# Install proto modules into local Maven repo
-RUN cd family-proto && ../mvnw install -q && cd ..
-RUN cd device-proto && ../mvnw install -q && cd ..
 
-# Build the geofencing service
-RUN ./mvnw clean package -DskipTests -q
-
-# ========================
-# Stage 2: Runner
-# ========================
-FROM eclipse-temurin:21-jre AS runner
-
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 COPY --from=builder /app/target/*.jar app.jar
 
-EXPOSE 8086
+EXPOSE 8761
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
