@@ -39,3 +39,12 @@ app:
       gps: gps
 server:
   port: 8086
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_URL}/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
