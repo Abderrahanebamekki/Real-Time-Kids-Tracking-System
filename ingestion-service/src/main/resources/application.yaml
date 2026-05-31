@@ -14,7 +14,7 @@ spring:
 
 app:
   mqtt:
-    url: "tcp://${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP}:${TCP_PORT}"
+    url: "tcp://${HOST}:${TCP_PORT}"
     client-id: ingestion-service
 server:
   port: 8087
