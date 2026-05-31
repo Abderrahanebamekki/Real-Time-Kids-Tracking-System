@@ -46,5 +46,5 @@ eureka:
       defaultZone: http://${EUREKA_URL}/eureka/
     register-with-eureka: true
     fetch-registry: true
-#  instance:
-#    prefer-ip-address: true
+  instance:
+    prefer-ip-address: true
