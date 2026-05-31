@@ -4,18 +4,23 @@ WORKDIR /app
 COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
 
-RUN ./mvnw dependency:go-offline -B
+COPY family-proto/ family-proto/
+COPY device-proto/ device-proto/
 
-COPY src/ ./src/
+RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
+
+COPY src/ src/
+
+RUN cd family-proto && ../mvnw clean install -DskipTests
+RUN cd device-proto && ../mvnw clean install -DskipTests
 
 RUN ./mvnw clean package -DskipTests
-
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 COPY --from=builder /app/target/*.jar app.jar
 
-EXPOSE 8761
+EXPOSE 8086
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
