@@ -4,8 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN mvn clean package -DskipTests -pl geofencing-service -am
-
+RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21-jre AS runner
 
 WORKDIR /app
