@@ -3,14 +3,14 @@ spring:
     name: notification-service
 
   rabbitmq:
-    host: rabbitmq
+    host: ${RABBITMQ_URL}
     port: 5672
-    username: admin
-    password: admin
+    username: ${RABBITMQ_DEFAULT_USER}
+    password: ${RABBITMQ_DEFAULT_PASS}
   data:
     redis:
-      host: redis
-      port: 6379
+      host: ${REDISHOST}
+      port: ${REDISPORT}
 
 app:
   rabbitmq:
