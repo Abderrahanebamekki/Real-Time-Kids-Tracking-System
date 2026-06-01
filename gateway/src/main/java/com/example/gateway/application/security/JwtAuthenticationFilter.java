@@ -6,6 +6,7 @@ import com.example.gateway.core.domain.user.UserRepository;
 import io.jsonwebtoken.JwtException;
 import io.r2dbc.postgresql.codec.Json;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -38,6 +39,7 @@ import java.util.Map;
 @Component
 @Order(-1)
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter implements GlobalFilter {
 
     private final JwtService jwtService;
@@ -64,7 +66,7 @@ public class JwtAuthenticationFilter implements GlobalFilter {
 
         try {
             String username = jwtService.extractUsername(jwt);
-
+            log.info("Extracted username: {}", username);
             return userRepository.findByUsername(username)
                     .flatMap(user -> {
                         UsernamePasswordAuthenticationToken authentication =
