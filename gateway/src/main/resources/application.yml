@@ -34,7 +34,7 @@ spring:
                 - Path=/device/**
 
             - id: geofencing-service
-              uri: http://real-time-kids-tracking-system-51a3.railway.internal
+              uri: http://real-time-kids-tracking-system-51a3.railway.internal:8086
               predicates:
                 - Path=/geofencing/**
 
