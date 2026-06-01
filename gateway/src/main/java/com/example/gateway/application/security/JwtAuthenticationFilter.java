@@ -82,11 +82,10 @@ public class JwtAuthenticationFilter implements GlobalFilter {
 
                         return chain.filter(exchange.mutate().request(mutated).build())
                                 .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
-                    })
-                    .switchIfEmpty(writeError(exchange, HttpStatus.UNAUTHORIZED, "User not found"));
+                    }).onErrorResume(e -> writeError(exchange, HttpStatus.UNAUTHORIZED, "Invalid or expired token"));
 
         } catch (JwtException | IllegalArgumentException e) {
-            return writeError(exchange, HttpStatus.UNAUTHORIZED, "Invalid or expired token");
+            return writeError(exchange, HttpStatus.UNAUTHORIZED, "UserNotFound");
         }
     }
 
