@@ -24,27 +24,27 @@ spring:
         webflux:
           routes:
             - id: identity-family
-              uri: lb://IDENTITY-FAMILY
+              uri: ${FAMILY_SERVICE_URI}
               predicates:
                 - Path=/identity/**
 
             - id: device-gateway
-              uri: lb://DEVICE-GATEWAY
+              uri: ${DEVICE_SERVICE_URI}
               predicates:
                 - Path=/device/**
 
             - id: geofencing-service
-              uri: http://real-time-kids-tracking-system-51a3.railway.internal:8086
+              uri: ${GEOFENCING_SERVICE_URI}
               predicates:
                 - Path=/geofencing/**
 
             - id: notification-service
-              uri: lb://NOTIFICATION-SERVICE
+              uri: ${NOTIFICATION_SERVICE_URI}
               predicates:
                 - Path=/notifications/**
 
             - id : daily-tracking-service
-              uri: lb://DAILY-TRACKING-SERVICE
+              uri: ${DAILY_TRACKING_SERVICE_URI}
               predicates:
                 - Path=/daily_tracking/**
   mail:
