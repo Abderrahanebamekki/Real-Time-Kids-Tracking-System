@@ -22,7 +22,7 @@ grpc:
   server:
     port: 9093
   client:
-    host: ${GRPC_HOST:localhost}
+    host: ${GRPC_HOST:family-service.railway.internal}
     port: ${GRPC_PORT:9090}
 management:
   endpoints:
