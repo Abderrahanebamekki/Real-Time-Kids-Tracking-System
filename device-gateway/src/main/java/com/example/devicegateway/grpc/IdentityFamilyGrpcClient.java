@@ -13,18 +13,16 @@ import reactor.core.publisher.Mono;
 
 @Component
 public class IdentityFamilyGrpcClient {
-    @Value("${grpc.client.host}")
-    private String grpcHost;
-
-    @Value("${grpc.client.port}")
-    private int grpcPort;
 
     private final ManagedChannel channel;
     private final IdentityFamilyServiceGrpc.IdentityFamilyServiceStub asyncStub;
 
-    public IdentityFamilyGrpcClient() {
+    public IdentityFamilyGrpcClient(
+            @Value("${grpc.client.host}") String host,
+            @Value("${grpc.client.port}") int port
+    ) {
         this.channel = ManagedChannelBuilder
-                .forAddress(grpcHost, grpcPort)
+                .forAddress(host, port)
                 .usePlaintext()
                 .build();
 
