@@ -36,3 +36,12 @@ management:
   info:
     env:
       enabled: true # Expose environment variables in /actuator/info
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_URL:eureka-server.railway.internal:8761}/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: ${RAILWAY_PRIVATE_DOMAIN}
+    prefer-ip-address: false
