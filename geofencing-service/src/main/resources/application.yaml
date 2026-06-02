@@ -10,6 +10,7 @@ spring:
     redis:
       host: ${REDISHOST}
       port: ${REDISPORT}
+      password: ${REDISPASSWORD}
 
   r2dbc:
     url: r2dbc:postgresql://${PGHOST}:${PGPORT}/${POSTGRES_DB}
