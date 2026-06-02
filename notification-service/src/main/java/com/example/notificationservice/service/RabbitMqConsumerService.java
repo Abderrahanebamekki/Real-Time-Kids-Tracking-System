@@ -3,7 +3,6 @@ package com.example.notificationservice.service;
 import com.example.notificationservice.dto.BatteryEvent;
 import com.example.notificationservice.dto.HeartbeatEvent;
 import com.example.notificationservice.dto.MessageType;
-import com.example.notificationservice.dto.NotificationEvent;
 import com.example.notificationservice.dto.OxygenEvent;
 import com.example.notificationservice.dto.SafeZoneEvent;
 import com.example.notificationservice.dto.SpeedEvent;
@@ -14,15 +13,12 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class RabbitMqConsumerService {
 
-    private final grpcClient grpcClient;
+    private final GrpcClient grpcClient;
     private final RedisService redisService;
 
     @RabbitListener(queues = "${app.rabbitmq.queues.speed}")

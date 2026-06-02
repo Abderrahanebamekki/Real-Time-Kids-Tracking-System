@@ -14,27 +14,22 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 @Component
 @RequiredArgsConstructor
-public class grpcClient {
+public class GrpcClient {
 
-    @Value("${grpc.client.host}")
-    private String grpcHost;
-
-    @Value("${grpc.client.port}")
-    private int grpcPort;
 
     private final ManagedChannel channel;
     private final IdentityFamilyServiceGrpc.IdentityFamilyServiceStub asyncStub;
 
-    public grpcClient() {
+    public GrpcClient(
+            @Value("${grpc.client.host}") String host,
+            @Value("${grpc.client.port}") int port
+    ) {
         this.channel = ManagedChannelBuilder
-                .forAddress(grpcHost, grpcPort)
+                .forAddress(host, port)
                 .usePlaintext()
                 .build();
-
         this.asyncStub = IdentityFamilyServiceGrpc.newStub(channel);
     }
 
