@@ -20,7 +20,7 @@ spring:
         webflux:
           routes:
             - id: identity-family
-              uri: ${FAMILY_SERVICE_URI}
+              uri: family-service.railway.internal:8080
               predicates:
                 - Path=/identity/**
 
