@@ -14,18 +14,15 @@ import reactor.core.publisher.Mono;
 @Component
 public class DeviceGrpcClient {
 
-    @Value("${grpc.client.host}")
-    private String grpcHost;
-
-    @Value("${grpc.client.port}")
-    private int grpcPort;
-
     private final ManagedChannel channel;
     private final DeviceServiceGrpc.DeviceServiceStub asyncStub;
 
-    public DeviceGrpcClient() {
+    public DeviceGrpcClient(
+            @Value("${grpc.client.host}") String host,
+            @Value("${grpc.client.port}") int port
+    ) {
         this.channel = ManagedChannelBuilder
-                .forAddress(grpcHost, grpcPort)
+                .forAddress(host, port)
                 .usePlaintext()
                 .build();
 
