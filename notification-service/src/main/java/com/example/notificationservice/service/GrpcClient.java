@@ -15,9 +15,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
-@RequiredArgsConstructor
 public class GrpcClient {
-
+    
 
     private final ManagedChannel channel;
     private final IdentityFamilyServiceGrpc.IdentityFamilyServiceStub asyncStub;
