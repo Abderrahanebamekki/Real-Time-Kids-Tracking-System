@@ -3,10 +3,6 @@ spring:
     name: daily-tracking-service
   kafka:
     bootstrap-servers: ${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP}
-  eureka:
-    client:
-      serviceUrl:
-        defaultZone: http://${EUREKA_URL}/eureka/
     consumer:
       group-id: daily-tracking-service
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
