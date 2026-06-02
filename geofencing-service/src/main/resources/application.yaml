@@ -23,7 +23,7 @@ spring:
   kafka:
     bootstrap-servers: ${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP}
     listener:
-      auto-startup: false
+      auto-startup: true
 
     consumer:
       group-id: geofencing-service
