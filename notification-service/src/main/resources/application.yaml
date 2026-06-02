@@ -31,3 +31,8 @@ eureka:
   instance:
     hostname: ${RAILWAY_PRIVATE_DOMAIN}
     prefer-ip-address: false
+
+grpc:
+  client:
+    host: ${GRPC_HOST:localhost}
+    port: ${GRPC_PORT:9090}
