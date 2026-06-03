@@ -1,12 +1,9 @@
 spring:
   application:
     name: daily-tracking-service
+
   kafka:
-    bootstrap-servers: ${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP}
-  eureka:
-    client:
-      serviceUrl:
-        defaultZone: http://${EUREKA_URL}/eureka/
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
     consumer:
       group-id: daily-tracking-service
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -14,6 +11,7 @@ spring:
       properties:
         spring.json.trusted.packages: "*"
         spring.json.value.default.type: com.example.dailytrackingservice.dto.Envelope
+
   r2dbc:
     url: r2dbc:postgresql://${PGHOST}:${PGPORT}/${POSTGRES_DB}
     username: ${POSTGRES_USER}
@@ -22,25 +20,30 @@ spring:
       enabled: true
       max-size: 10
       initial-size: 5
+
   rabbitmq:
-    host: ${RABBITMQ_PRIVATE_URL}
-    port: 5672
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_DEFAULT_USER}
     password: ${RABBITMQ_DEFAULT_PASS}
+
   data:
     redis:
       host: ${REDISHOST}
       port: ${REDISPORT}
       password: ${REDISPASSWORD}
 
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_URL}/eureka/
+
 app:
   kafka:
     topic:
-     vitals: vitals
-     battery: battery
-     gps: gps
+      vitals: vitals
+      battery: battery
+      gps: gps
 
 server:
   port: 8089
-
-
