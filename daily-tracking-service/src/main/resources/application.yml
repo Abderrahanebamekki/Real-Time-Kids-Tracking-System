@@ -31,6 +31,7 @@ spring:
     redis:
       host: ${REDISHOST}
       port: ${REDISPORT}
+      password: ${REDISPASSWORD}
 
 app:
   kafka:
