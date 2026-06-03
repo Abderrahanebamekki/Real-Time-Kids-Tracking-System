@@ -11,6 +11,7 @@ spring:
     redis:
       host: ${REDISHOST}
       port: ${REDISPORT}
+      password: ${REDISPASSWORD}
 
 app:
   rabbitmq:
