@@ -20,6 +20,10 @@ public class MqttMessageHandler implements MessageHandler {
         String payload = String.valueOf(message.getPayload());
         try {
             assert topic != null;
+            if (topic.startsWith("$events/")) {
+                System.out.println("EVENT [" + topic + "]: " + payload);
+                return;
+            }
             routingService.route(topic, payload).subscribe();
         } catch (Exception e) {
             throw new RuntimeException(e);
