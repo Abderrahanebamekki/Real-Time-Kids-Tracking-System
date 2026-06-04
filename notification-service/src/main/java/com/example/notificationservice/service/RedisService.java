@@ -97,33 +97,46 @@ public class RedisService {
 
     public Flux<NotificationEvent> subscribe(String parentId) {
         String streamKey = streamKey(parentId);
-        AtomicReference<String> lastId = new AtomicReference<>("0");
 
-        return Flux.interval(Duration.ofSeconds(2))
-                .flatMap(tick ->
-                        stringRedisTemplate.opsForStream()
-                                .read(
-                                        StreamReadOptions.empty().count(10),
-                                        StreamOffset.create(streamKey, ReadOffset.from(lastId.get()))
-                                )
-                                .flatMap(record -> {
-                                    String json = (String) record.getValue().get("data"); // ✅ get String
-                                    return stringRedisTemplate.opsForStream()
-                                            .delete(streamKey, record.getId())
-                                            .doOnSuccess(d ->
-                                                    lastId.set(record.getId().getValue())
+        return getLastStreamEntryId(streamKey)
+                .flatMapMany(lastGeneratedId -> {
+                    log.info("Starting subscription from ID: {}", lastGeneratedId);
+                    AtomicReference<String> lastId = new AtomicReference<>(lastGeneratedId);
+
+                    return Flux.interval(Duration.ofSeconds(2))
+                            .flatMap(tick ->
+                                    stringRedisTemplate.opsForStream()
+                                            .read(
+                                                    StreamReadOptions.empty().count(10),
+                                                    StreamOffset.create(streamKey, ReadOffset.from(lastId.get()))
                                             )
-                                            .thenReturn(json);
-                                })
-                                .map(json -> {
-                                    try {
-                                        return objectMapper.readValue(json, NotificationEvent.class); // ✅ deserialize
-                                    } catch (JsonProcessingException e) {
-                                        throw new RuntimeException("Failed to deserialize", e);
-                                    }
-                                })
-                )
-                .doOnSubscribe(s -> log.info("Subscribed to stream {}", streamKey))
-                .doOnCancel(() -> log.info("Unsubscribed from stream {}", streamKey));
+                                            .flatMap(record -> {
+                                                String json = (String) record.getValue().get("data");
+                                                return stringRedisTemplate.opsForStream()
+                                                        .delete(streamKey, record.getId())
+                                                        .doOnSuccess(d ->
+                                                                lastId.set(record.getId().getValue())
+                                                        )
+                                                        .thenReturn(json);
+                                            })
+                                            .map(json -> {
+                                                try {
+                                                    return objectMapper.readValue(json, NotificationEvent.class);
+                                                } catch (JsonProcessingException e) {
+                                                    throw new RuntimeException("Failed to deserialize", e);
+                                                }
+                                            })
+                            )
+                            .doOnSubscribe(s -> log.info("Subscribed to stream {}", streamKey))
+                            .doOnCancel(() -> log.info("Unsubscribed from stream {}", streamKey));
+                });
+    }
+
+    private Mono<String> getLastStreamEntryId(String streamKey) {
+        return stringRedisTemplate.opsForStream()
+                .reverseRange(streamKey, Range.unbounded())
+                .next()
+                .map(record -> record.getId().getValue())
+                .defaultIfEmpty("0");
     }
 }
