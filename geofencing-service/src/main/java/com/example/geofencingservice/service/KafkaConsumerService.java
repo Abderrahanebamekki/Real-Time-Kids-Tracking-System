@@ -17,7 +17,7 @@ import java.util.Optional;
 @Slf4j
 public class KafkaConsumerService {
 
-    private static final double MAX_SPEED_THRESHOLD = 7;
+    private static final double MAX_SPEED_THRESHOLD = 6.5;
     private final SafeZoneRepository safeZoneRepository;
     private final DeviceGrpcClient deviceGrpcClient;
     private final RedisService redisService;
