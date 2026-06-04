@@ -2,6 +2,7 @@ package com.example.ingestionservice.mqtt;
 
 import com.example.ingestionservice.service.IngestionRoutingService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.integration.mqtt.support.MqttHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class MqttMessageHandler implements MessageHandler {
 
     private final IngestionRoutingService routingService;
@@ -20,8 +22,8 @@ public class MqttMessageHandler implements MessageHandler {
         String payload = String.valueOf(message.getPayload());
         try {
             assert topic != null;
-            if (topic.startsWith("$events/")) {
-                System.out.println("EVENT [" + topic + "]: " + payload);
+            if (topic != null && topic.startsWith("$events/")) {
+                log.info("EMQX EVENT [{}]: {}", topic, payload);
                 return;
             }
             routingService.route(topic, payload).subscribe();
