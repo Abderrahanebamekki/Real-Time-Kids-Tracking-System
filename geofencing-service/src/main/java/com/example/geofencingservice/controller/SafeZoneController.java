@@ -2,6 +2,7 @@ package com.example.geofencingservice.controller;
 
 import com.example.geofencingservice.dto.SafeZoneRequest;
 import com.example.geofencingservice.dto.SafeZoneResponse;
+import com.example.geofencingservice.dto.SafeZoneUpdateRequest;
 import com.example.geofencingservice.service.SafeZoneService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,5 +32,13 @@ public class SafeZoneController {
     public Mono<ResponseEntity<Void>> deleteSafeZone(@PathVariable Long id) {
         return safeZoneService.deleteSafeZone(id)
                 .thenReturn(ResponseEntity.noContent().build());
+    }
+
+    @PutMapping("/child/{childId}")
+    public Mono<ResponseEntity<Void>> updateSafeZoneByChild(
+            @PathVariable Long childId,
+            @RequestBody SafeZoneUpdateRequest request) {
+        return safeZoneService.updateSafeZoneByChild(childId, request)
+                .thenReturn(ResponseEntity.ok().build());
     }
 }
