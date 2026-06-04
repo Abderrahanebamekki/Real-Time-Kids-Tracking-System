@@ -10,4 +10,5 @@ public interface ChildService {
     boolean verifyChild(Long child_id , Long parent_id);
     String getChildName(Long child_id);
     List<ChildDto> getChildrenForParent(Long userId);
+    void deleteChild(Long childId, Long userId);
 }

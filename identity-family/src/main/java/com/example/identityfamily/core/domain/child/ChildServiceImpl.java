@@ -14,7 +14,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -84,6 +86,20 @@ public class ChildServiceImpl implements ChildService {
     @Override
     public String getChildName(Long child_id) {
         return childRepository.getChildName(child_id);
+    }
+
+    @Override
+    public void deleteChild(Long childId, Long userId) {
+        ParentEntity parent = parentRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Parent not found"));
+        ChildEntity child = childRepository.findById(childId)
+                .orElseThrow(() -> new RuntimeException("Child not found"));
+        if (!parentChildRepository.existsByParentAndChild(parent, child)) {
+            throw new RuntimeException("You are not authorized to delete this child");
+        }
+        List<ParentChildEntity> relations = parentChildRepository.findByChildId(childId);
+        parentChildRepository.deleteAll(relations);
+        childRepository.delete(child);
     }
 
     @Override

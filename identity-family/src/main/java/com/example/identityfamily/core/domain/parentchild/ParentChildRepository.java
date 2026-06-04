@@ -26,4 +26,6 @@ public interface ParentChildRepository extends JpaRepository<ParentChildEntity, 
 
     List<ParentChildEntity> findByParentId(Long parentId);
 
+    List<ParentChildEntity> findByChildId(Long childId);
+
 }
