@@ -114,5 +114,12 @@ public class ParentServiceImpl implements ParentService {
         return parentChildRepository.getAllUsersByChildId(childId);
     }
 
+    @Override
+    public String getFullname(Long userId) {
+        ParentEntity parent = parentRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Parent not found"));
+        return parent.getFirstName() + " " + parent.getLastName();
+    }
+
 
 }

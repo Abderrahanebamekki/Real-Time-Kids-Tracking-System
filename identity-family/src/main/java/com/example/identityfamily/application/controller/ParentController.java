@@ -54,6 +54,12 @@ public class ParentController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/fullname")
+    public ResponseEntity<String> getParentFullname(@RequestHeader("X-User-Id") String userId) {
+        String fullname = parentService.getFullname(Long.parseLong(userId));
+        return ResponseEntity.ok(fullname);
+    }
+
     @PatchMapping("/invitations/{invitationId}/decline")
     public ResponseEntity<Void> declineInvitation(
             @RequestHeader("X-User-Id") String userId,
