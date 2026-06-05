@@ -66,10 +66,10 @@ public interface SafeZoneRepository extends R2dbcRepository<SafeZoneEntity,Long>
     UPDATE safezone
     SET radius_meters = :radius,
         center = ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography
-    WHERE child_id = :childId
+    WHERE id = :id
 """)
-    Mono<Void> updateSafeZoneByChild(
-            Long childId,
+    Mono<Void> updateSafeZoneById(
+            Long id,
             Double radius,
             Double longitude,
             Double latitude

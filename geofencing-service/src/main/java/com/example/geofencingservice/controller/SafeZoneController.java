@@ -34,11 +34,11 @@ public class SafeZoneController {
                 .thenReturn(ResponseEntity.noContent().build());
     }
 
-    @PutMapping("/child/{childId}")
-    public Mono<ResponseEntity<Void>> updateSafeZoneByChild(
-            @PathVariable Long childId,
+    @PutMapping("/{id}")
+    public Mono<ResponseEntity<Void>> updateSafeZoneById(
+            @PathVariable Long id,
             @RequestBody SafeZoneUpdateRequest request) {
-        return safeZoneService.updateSafeZoneByChild(childId, request)
+        return safeZoneService.updateSafeZoneById(id, request)
                 .thenReturn(ResponseEntity.ok().build());
     }
 }

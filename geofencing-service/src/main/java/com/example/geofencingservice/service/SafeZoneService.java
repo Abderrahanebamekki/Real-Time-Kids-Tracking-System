@@ -45,9 +45,9 @@ public class SafeZoneService {
         return safeZoneRepository.deleteById(id);
     }
 
-    public Mono<Void> updateSafeZoneByChild(Long childId, SafeZoneUpdateRequest request) {
-        return safeZoneRepository.updateSafeZoneByChild(
-                childId,
+    public Mono<Void> updateSafeZoneById(Long id, SafeZoneUpdateRequest request) {
+        return safeZoneRepository.updateSafeZoneById(
+                id,
                 request.radius(),
                 request.longitude(),
                 request.latitude()
