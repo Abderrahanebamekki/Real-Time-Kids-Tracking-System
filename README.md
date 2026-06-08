@@ -8,7 +8,7 @@ A real-time GPS tracking microservices system that allows parents to monitor the
 
 <div align="center">
 
-<img width="448" height="496" alt="System Architecture" src="https://github.com/user-attachments/assets/318893ae-982c-47ac-812c-da5009211f4a" />
+<img width="2720" height="1480" alt="backend_architecture" src="https://github.com/user-attachments/assets/765b987c-073a-4266-81e4-c20f774297b4" />
 
 </div>
 
