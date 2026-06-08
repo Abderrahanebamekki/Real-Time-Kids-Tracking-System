@@ -13,4 +13,5 @@ public interface ParentService {
     public void acceptInvitation(Long invitationId,Long userId);
     public void declineInvitation(Long invitationId,Long userId);
     List<Long> getAllParents(Long childId);
+    String getFullname(Long userId);
 }

@@ -19,10 +19,12 @@ public class VitalsService {
 
     private final VitalsRepository vitalsRepository;
 
-    public Flux<Vitals> getVitalsForChildInDay(String childId) {
-        LocalDate today = LocalDate.now(ZoneOffset.UTC);
-        Instant start = today.atStartOfDay(ZoneOffset.UTC).toInstant();
-        Instant end = today.atTime(LocalTime.MAX).atZone(ZoneOffset.UTC).toInstant();
+    public Flux<Vitals> getVitalsForChildInDay(String childId, LocalDate day) {
+        if (day == null) {
+            day = LocalDate.now(ZoneOffset.UTC);
+        }
+        Instant start = day.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant end = day.atTime(LocalTime.MAX).atZone(ZoneOffset.UTC).toInstant();
         return vitalsRepository.findByChildIdAndTimestampBetween(childId, start, end);
     }
 }

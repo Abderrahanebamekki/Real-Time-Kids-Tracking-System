@@ -7,6 +7,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import jakarta.annotation.PreDestroy;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -16,9 +17,12 @@ public class IdentityFamilyGrpcClient {
     private final ManagedChannel channel;
     private final IdentityFamilyServiceGrpc.IdentityFamilyServiceStub asyncStub;
 
-    public IdentityFamilyGrpcClient() {
+    public IdentityFamilyGrpcClient(
+            @Value("${grpc.client.host}") String host,
+            @Value("${grpc.client.port}") int port
+    ) {
         this.channel = ManagedChannelBuilder
-                .forAddress("localhost", 9090)
+                .forAddress(host, port)
                 .usePlaintext()
                 .build();
 

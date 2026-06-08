@@ -28,6 +28,14 @@ public class ChildController {
         return ResponseEntity.status(HttpStatus.CREATED).body(child);
     }
 
+    @DeleteMapping("/{childId}")
+    public ResponseEntity<Void> deleteChild(
+            @PathVariable Long childId,
+            @RequestHeader("X-User-Id") String userId) {
+        childService.deleteChild(childId, Long.parseLong(userId));
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/")
     public ResponseEntity<List<ChildDto>> getChildrenForParent(
             @RequestHeader("X-User-Id") String userId) {

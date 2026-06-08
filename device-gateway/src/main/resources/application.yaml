@@ -5,9 +5,9 @@ spring:
   application:
     name: device-gateway
   r2dbc:
-    url: r2dbc:postgresql://localhost:5432/devices
-    username: postgres
-    password: 12345678
+    url: r2dbc:postgresql://${PGHOST}:${PGPORT}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
     pool:
       enabled: true
       max-size: 10
@@ -21,7 +21,9 @@ server:
 grpc:
   server:
     port: 9093
-
+  client:
+    host: ${GRPC_HOST:family-service.railway.internal}
+    port: ${GRPC_PORT:9090}
 management:
   endpoints:
     web:
@@ -34,3 +36,12 @@ management:
   info:
     env:
       enabled: true # Expose environment variables in /actuator/info
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_URL:eureka-server.railway.internal:8761}/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: ${RAILWAY_PRIVATE_DOMAIN}
+    prefer-ip-address: false

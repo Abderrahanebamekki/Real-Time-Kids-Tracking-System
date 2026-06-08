@@ -44,7 +44,8 @@ public class MqttConfig {
                         mqttClientFactory,
                         "devices/+/gps",
                         "devices/+/vitals",
-                        "devices/+/battery"
+                        "devices/+/battery",
+                        "$events/client_disconnected"
                 );
         adapter.setCompletionTimeout(5000);
         adapter.setQos(1);

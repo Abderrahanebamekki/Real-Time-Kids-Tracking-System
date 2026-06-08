@@ -7,6 +7,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import jakarta.annotation.PreDestroy;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -16,9 +17,12 @@ public class DeviceGrpcClient {
     private final ManagedChannel channel;
     private final DeviceServiceGrpc.DeviceServiceStub asyncStub;
 
-    public DeviceGrpcClient() {
+    public DeviceGrpcClient(
+            @Value("${grpc.client.host}") String host,
+            @Value("${grpc.client.port}") int port
+    ) {
         this.channel = ManagedChannelBuilder
-                .forAddress("localhost", 9093)
+                .forAddress(host, port)
                 .usePlaintext()
                 .build();
 

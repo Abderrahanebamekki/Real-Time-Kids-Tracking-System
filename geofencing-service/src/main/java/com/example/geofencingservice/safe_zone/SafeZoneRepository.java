@@ -62,4 +62,17 @@ public interface SafeZoneRepository extends R2dbcRepository<SafeZoneEntity,Long>
 
     Mono<Void> deleteByChildId(Long childId);
 
+    @Query("""
+    UPDATE safezone
+    SET radius_meters = :radius,
+        center = ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography
+    WHERE id = :id
+""")
+    Mono<Void> updateSafeZoneById(
+            Long id,
+            Double radius,
+            Double longitude,
+            Double latitude
+    );
+
 }

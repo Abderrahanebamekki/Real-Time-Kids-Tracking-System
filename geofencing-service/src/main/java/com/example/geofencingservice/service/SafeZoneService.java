@@ -3,6 +3,7 @@ package com.example.geofencingservice.service;
 
 import com.example.geofencingservice.dto.SafeZoneRequest;
 import com.example.geofencingservice.dto.SafeZoneResponse;
+import com.example.geofencingservice.dto.SafeZoneUpdateRequest;
 import com.example.geofencingservice.safe_zone.SafeZoneRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,15 @@ public class SafeZoneService {
 
     public Mono<Void> deleteSafeZone(Long id){
         return safeZoneRepository.deleteById(id);
+    }
+
+    public Mono<Void> updateSafeZoneById(Long id, SafeZoneUpdateRequest request) {
+        return safeZoneRepository.updateSafeZoneById(
+                id,
+                request.radius(),
+                request.longitude(),
+                request.latitude()
+        );
     }
 
 

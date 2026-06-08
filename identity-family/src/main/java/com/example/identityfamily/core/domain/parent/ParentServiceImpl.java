@@ -83,14 +83,14 @@ public class ParentServiceImpl implements ParentService {
         ParentEntity coParent = parentRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Co-Parent not found"));
         CoParentInvitationEntity invitation = coParentInvitationRepository.findById(invitationId).orElseThrow(() -> new RuntimeException("Invitation not found"));
         if (invitation.getReceiverParent().getId().equals(coParent.getId())) {
-            invitation.setStatus(InvitationStatus.ACCEPTED);
-            coParentInvitationRepository.save(invitation);
             ParentChildEntity parentChild = ParentChildEntity.builder()
                     .role(Role.CO_PARENT)
                     .parent(coParent)
                     .child(invitation.getChild())
                     .permission(new PermissionEntity())
                     .build();
+            parentChildRepository.save(parentChild);
+            coParentInvitationRepository.delete(invitation);
         }else {
             throw new RuntimeException("You are not the receiver of this invitation");
         }
@@ -102,8 +102,7 @@ public class ParentServiceImpl implements ParentService {
         ParentEntity coParent = parentRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Co-Parent not found"));
         CoParentInvitationEntity invitation = coParentInvitationRepository.findById(invitationId).orElseThrow(() -> new RuntimeException("Invitation not found"));
         if (invitation.getReceiverParent().getId().equals(coParent.getId())) {
-            invitation.setStatus(InvitationStatus.CANCELLED);
-            coParentInvitationRepository.save(invitation);
+            coParentInvitationRepository.delete(invitation);
         }else {
             throw new RuntimeException("You are not the receiver of this invitation");
         }
@@ -112,6 +111,13 @@ public class ParentServiceImpl implements ParentService {
     @Override
     public List<Long> getAllParents(Long childId) {
         return parentChildRepository.getAllUsersByChildId(childId);
+    }
+
+    @Override
+    public String getFullname(Long userId) {
+        ParentEntity parent = parentRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Parent not found"));
+        return parent.getFirstName() + " " + parent.getLastName();
     }
 
 

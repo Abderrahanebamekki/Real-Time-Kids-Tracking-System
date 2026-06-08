@@ -9,25 +9,26 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 @Component
-@RequiredArgsConstructor
-public class grpcClient {
+public class GrpcClient {
+    
 
     private final ManagedChannel channel;
     private final IdentityFamilyServiceGrpc.IdentityFamilyServiceStub asyncStub;
 
-    public grpcClient() {
+    public GrpcClient(
+            @Value("${grpc.client.host}") String host,
+            @Value("${grpc.client.port}") int port
+    ) {
         this.channel = ManagedChannelBuilder
-                .forAddress("localhost", 9090)
+                .forAddress(host, port)
                 .usePlaintext()
                 .build();
-
         this.asyncStub = IdentityFamilyServiceGrpc.newStub(channel);
     }
 

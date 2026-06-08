@@ -3,14 +3,15 @@ spring:
     name: notification-service
 
   rabbitmq:
-    host: localhost
+    host: ${RABBITMQ_PRIVATE_URL}
     port: 5672
-    username: admin
-    password: admin
+    username: ${RABBITMQ_DEFAULT_USER}
+    password: ${RABBITMQ_DEFAULT_PASS}
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDISHOST}
+      port: ${REDISPORT}
+      password: ${REDISPASSWORD}
 
 app:
   rabbitmq:
@@ -22,3 +23,17 @@ app:
       battery: battery.queue
 server:
   port: 8088
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_URL}/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: ${RAILWAY_PRIVATE_DOMAIN}
+    prefer-ip-address: false
+
+grpc:
+  client:
+    host: ${GRPC_HOST:localhost}
+    port: ${GRPC_PORT:9090}

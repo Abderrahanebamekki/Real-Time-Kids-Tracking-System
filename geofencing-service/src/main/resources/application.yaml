@@ -2,26 +2,29 @@ spring:
   application:
     name: geofencing-service
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: admin
-    password: admin
+    host: ${RABBITMQHOST}
+    port: ${RABBITMQPORT}
+    username: ${RABBITMQUSERNAME}
+    password: ${RABBITMQPASSWORD}
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDISHOST}
+      port: ${REDISPORT}
+      password: ${REDISPASSWORD}
 
   r2dbc:
-    url: r2dbc:postgresql://localhost:5432/geofencing
-    username: postgres
-    password: 12345678
+    url: r2dbc:postgresql://${PGHOST}:${PGPORT}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
     pool:
       enabled: true
       max-size: 10
       initial-size: 5
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP}
+    listener:
+      auto-startup: true
 
     consumer:
       group-id: geofencing-service
@@ -39,3 +42,18 @@ app:
       gps: gps
 server:
   port: 8086
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_URL}/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: ${RAILWAY_PRIVATE_DOMAIN}
+    prefer-ip-address: false
+
+grpc:
+  client:
+    host: ${GRPC_HOST:localhost}
+    port: ${GRPC_PORT:9093}
