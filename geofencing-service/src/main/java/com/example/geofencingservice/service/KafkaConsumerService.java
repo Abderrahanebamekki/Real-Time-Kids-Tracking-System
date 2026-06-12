@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class KafkaConsumerService {
 
-    private static final double MAX_SPEED_THRESHOLD = 6.5;
+    private static final double MAX_SPEED_THRESHOLD = 3.0;
     private final Map<String, PendingSpeedCheck> pendingSpeedChecks = new ConcurrentHashMap<>();
     private final Map<String, Double> latestSpeeds = new ConcurrentHashMap<>();
     private final SafeZoneRepository safeZoneRepository;
