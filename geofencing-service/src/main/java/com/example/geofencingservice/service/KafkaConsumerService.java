@@ -9,8 +9,11 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +21,8 @@ import java.util.Optional;
 public class KafkaConsumerService {
 
     private static final double MAX_SPEED_THRESHOLD = 6.5;
+    private final Map<String, PendingSpeedCheck> pendingSpeedChecks = new ConcurrentHashMap<>();
+    private final Map<String, Double> latestSpeeds = new ConcurrentHashMap<>();
     private final SafeZoneRepository safeZoneRepository;
     private final DeviceGrpcClient deviceGrpcClient;
     private final RedisService redisService;
@@ -128,12 +133,35 @@ public class KafkaConsumerService {
 
     private Mono<Void> processSpeed(String childId, Envelope event) {
         double speed = event.payload().speed();
+        latestSpeeds.put(childId, speed);
 
-        if (speed > MAX_SPEED_THRESHOLD) {
-            return publishSpeedAlert(childId, speed);
+        if (speed >= MAX_SPEED_THRESHOLD) {
+            pendingSpeedChecks.computeIfAbsent(childId, id -> {
+                PendingSpeedCheck pending = new PendingSpeedCheck(speed, event.timestamp());
+                scheduleAverageSpeedCheck(childId, pending);
+                return pending;
+            });
         }
 
         return Mono.empty();
+    }
+
+    private void scheduleAverageSpeedCheck(String childId, PendingSpeedCheck pending) {
+        Mono.delay(Duration.ofSeconds(10))
+                .flatMap(tick -> {
+                    pendingSpeedChecks.remove(childId);
+                    Double latestSpeed = latestSpeeds.get(childId);
+                    if (latestSpeed == null) {
+                        return Mono.empty();
+                    }
+                    double averageSpeed = (pending.firstSpeed() + latestSpeed) / 2.0;
+                    if (averageSpeed >= MAX_SPEED_THRESHOLD) {
+                        return publishSpeedAlert(childId, averageSpeed);
+                    }
+                    return Mono.empty();
+                })
+                .doOnError(error -> log.error("Error during average speed check for child {}", childId, error))
+                .subscribe();
     }
 
     private Mono<Void> publishSpeedAlert(String childId, double speed) {
@@ -147,4 +175,6 @@ public class KafkaConsumerService {
     private Mono<Void> emptyMono(){
         return Mono.empty();
     }
+
+    private record PendingSpeedCheck(double firstSpeed, Instant timestamp) {}
 }
