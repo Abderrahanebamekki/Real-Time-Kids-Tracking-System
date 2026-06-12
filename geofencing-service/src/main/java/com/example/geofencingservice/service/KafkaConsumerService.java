@@ -147,7 +147,7 @@ public class KafkaConsumerService {
     }
 
     private void scheduleAverageSpeedCheck(String childId, PendingSpeedCheck pending) {
-        Mono.delay(Duration.ofSeconds(10))
+        Mono.delay(Duration.ofSeconds(25))
                 .flatMap(tick -> {
                     pendingSpeedChecks.remove(childId);
                     Double latestSpeed = latestSpeeds.get(childId);
